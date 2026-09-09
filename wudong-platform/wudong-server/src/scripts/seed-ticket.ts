@@ -46,9 +46,10 @@ async function seed() {
     {
       name: '苗族博物馆',
       description: '展示苗族历史文化、服饰银饰、农耕文明的专题博物馆，了解苗族文化的窗口',
-      coverImage: 'https://images.pexels.com/photos/3581364/pexels-photo-3581364.jpeg?auto=compress&cs=tinysrgb&w=800',
+      coverImage: 'https://images.pexels.com/photos/2187605/pexels-photo-2187605.jpeg?auto=compress&cs=tinysrgb&w=800',
       images: JSON.stringify([
-        'https://images.pexels.com/photos/3581364/pexels-photo-3581364.jpeg?auto=compress&cs=tinysrgb&w=800',
+        'https://images.pexels.com/photos/2187605/pexels-photo-2187605.jpeg?auto=compress&cs=tinysrgb&w=800',
+        'https://images.pexels.com/photos/372748/pexels-photo-372748.jpeg?auto=compress&cs=tinysrgb&w=800',
       ]),
       address: '乌东村一组',
       longitude: 108.6845,
@@ -64,9 +65,9 @@ async function seed() {
     {
       name: '乌东古寨',
       description: '百年历史的苗族古寨，保存完好的吊脚楼建筑群，是活着的苗族历史博物馆',
-      coverImage: 'https://images.pexels.com/photos/3601425/pexels-photo-3601425.jpeg?auto=compress&cs=tinysrgb&w=800',
+      coverImage: 'https://images.pexels.com/photos/2747449/pexels-photo-2747449.jpeg?auto=compress&cs=tinysrgb&w=800',
       images: JSON.stringify([
-        'https://images.pexels.com/photos/3601425/pexels-photo-3601425.jpeg?auto=compress&cs=tinysrgb&w=800',
+        'https://images.pexels.com/photos/2747449/pexels-photo-2747449.jpeg?auto=compress&cs=tinysrgb&w=800',
       ]),
       address: '乌东村古寨区',
       longitude: 108.6855,
@@ -82,9 +83,9 @@ async function seed() {
     {
       name: '侗族鼓楼',
       description: '侗族标志性建筑，节日集会的重要场所，展现侗族人民的建筑智慧',
-      coverImage: 'https://images.pexels.com/photos/2187605/pexels-photo-2187605.jpeg?auto=compress&cs=tinysrgb&w=800',
+      coverImage: 'https://images.pexels.com/photos/2404843/pexels-photo-2404843.jpeg?auto=compress&cs=tinysrgb&w=800',
       images: JSON.stringify([
-        'https://images.pexels.com/photos/2187605/pexels-photo-2187605.jpeg?auto=compress&cs=tinysrgb&w=800',
+        'https://images.pexels.com/photos/2404843/pexels-photo-2404843.jpeg?auto=compress&cs=tinysrgb&w=800',
       ]),
       address: '乌东村二组',
       longitude: 108.6865,
@@ -100,8 +101,9 @@ async function seed() {
     {
       name: '苗族歌舞表演',
       description: '每晚举行的苗族歌舞表演，体验苗族人民的热情，感受原生态民族艺术魅力',
-      coverImage: 'https://images.pexels.com/photos/1190297/pexels-photo-1190297.jpeg?auto=compress&cs=tinysrgb&w=800',
+      coverImage: 'https://images.pexels.com/photos/2092907/pexels-photo-2092907.jpeg?auto=compress&cs=tinysrgb&w=800',
       images: JSON.stringify([
+        'https://images.pexels.com/photos/2092907/pexels-photo-2092907.jpeg?auto=compress&cs=tinysrgb&w=800',
         'https://images.pexels.com/photos/1190297/pexels-photo-1190297.jpeg?auto=compress&cs=tinysrgb&w=800',
       ]),
       address: '乌东村民族文化广场',

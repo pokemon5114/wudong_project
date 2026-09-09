@@ -93,9 +93,10 @@ async function seed() {
     {
       name: '苗家田园客栈',
       description: '稻田环绕的田园民宿，清晨闻鸡鸣而起，夜晚听蛙声入睡，体验农耕文化',
-      coverImage: 'https://images.pexels.com/photos/2322446/pexels-photo-2322446.jpeg?auto=compress&cs=tinysrgb&w=800',
+      coverImage: 'https://images.pexels.com/photos/2310713/pexels-photo-2310713.jpeg?auto=compress&cs=tinysrgb&w=800',
       images: JSON.stringify([
-        'https://images.pexels.com/photos/2322446/pexels-photo-2322446.jpeg?auto=compress&cs=tinysrgb&w=800',
+        'https://images.pexels.com/photos/2310713/pexels-photo-2310713.jpeg?auto=compress&cs=tinysrgb&w=800',
+        'https://images.pexels.com/photos/2747449/pexels-photo-2747449.jpeg?auto=compress&cs=tinysrgb&w=800',
       ]),
       address: '乌东村四组农田旁',
       longitude: 108.6885,

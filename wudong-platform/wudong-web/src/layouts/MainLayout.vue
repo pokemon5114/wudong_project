@@ -1,42 +1,86 @@
 <template>
   <div class="main-layout">
-    <!-- 顶部导航 -->
+    <!-- 顶部导航 - 苗族风格 -->
     <header class="header">
+      <!-- 苗族装饰纹样顶部 -->
+      <div class="miao-pattern-top"></div>
+
       <div class="header-content container">
         <router-link to="/" class="logo">
           <div class="logo-icon">
-            <img src="https://images.pexels.com/photos/2310713/pexels-photo-2310713.jpeg?auto=compress&cs=tinysrgb&w=50&h=50&fit=crop" alt="logo" />
+            <!-- 苗族银饰风格图标 -->
+            <svg viewBox="0 0 50 50" class="logo-svg">
+              <defs>
+                <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" style="stop-color:#d4af37"/>
+                  <stop offset="100%" style="stop-color:#b8860b"/>
+                </linearGradient>
+              </defs>
+              <!-- 苗族银饰蝴蝶纹样 -->
+              <path d="M25 8 C15 8 10 18 10 25 C10 32 15 38 25 42 C35 38 40 32 40 25 C40 18 35 8 25 8"
+                    fill="none" stroke="url(#logoGrad)" stroke-width="2"/>
+              <circle cx="25" cy="25" r="6" fill="url(#logoGrad)"/>
+              <path d="M25 15 L25 35 M15 25 L35 25" stroke="url(#logoGrad)" stroke-width="1.5"/>
+              <circle cx="18" cy="18" r="2" fill="url(#logoGrad)"/>
+              <circle cx="32" cy="18" r="2" fill="url(#logoGrad)"/>
+              <circle cx="18" cy="32" r="2" fill="url(#logoGrad)"/>
+              <circle cx="32" cy="32" r="2" fill="url(#logoGrad)"/>
+            </svg>
           </div>
           <div class="logo-text">
             <span class="logo-title">乌东文旅</span>
-            <span class="logo-subtitle">WUDONG CULTURE</span>
+            <span class="logo-subtitle">苗寨风情 · 非遗传承</span>
           </div>
         </router-link>
 
         <nav class="nav">
           <router-link to="/" class="nav-item" :class="{ active: $route.path === '/' }">
-            <span class="nav-icon">🏠</span>
+            <span class="nav-icon">
+              <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
+                <path d="M12 2L2 12h3v9h6v-6h2v6h6v-9h3L12 2z"/>
+              </svg>
+            </span>
             <span class="nav-text">首页</span>
           </router-link>
           <router-link to="/products" class="nav-item" :class="{ active: $route.path.startsWith('/products') }">
-            <span class="nav-icon">👘</span>
-            <span class="nav-text">非遗商品</span>
+            <span class="nav-icon">
+              <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+              </svg>
+            </span>
+            <span class="nav-text">非遗好物</span>
           </router-link>
           <router-link to="/restaurants" class="nav-item" :class="{ active: $route.path.startsWith('/restaurants') }">
-            <span class="nav-icon">🍲</span>
-            <span class="nav-text">餐饮美食</span>
+            <span class="nav-icon">
+              <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
+                <path d="M11 9H9V2H7v7H5V2H3v7c0 2.12 1.66 3.84 3.75 3.97V22h2.5v-9.03C11.34 12.84 13 11.12 13 9V2h-2v7zm5-3v8h2.5v8H21V2c-2.76 0-5 2.24-5 4z"/>
+              </svg>
+            </span>
+            <span class="nav-text">苗家风味</span>
           </router-link>
           <router-link to="/hotels" class="nav-item" :class="{ active: $route.path.startsWith('/hotels') }">
-            <span class="nav-icon">🏠</span>
-            <span class="nav-text">住宿预订</span>
+            <span class="nav-icon">
+              <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
+                <path d="M7 13c1.66 0 3-1.34 3-3S8.66 7 7 7s-3 1.34-3 3 1.34 3 3 3zm12-6h-8v7H3V5H1v15h2v-3h18v3h2v-9c0-2.21-1.79-4-4-4z"/>
+              </svg>
+            </span>
+            <span class="nav-text">吊脚楼宿</span>
           </router-link>
           <router-link to="/tickets" class="nav-item" :class="{ active: $route.path.startsWith('/tickets') }">
-            <span class="nav-icon">🎫</span>
-            <span class="nav-text">线路订票</span>
+            <span class="nav-icon">
+              <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
+                <path d="M22 10V6c0-1.1-.9-2-2-2H4c-1.1 0-2 .9-2 2v4c1.1 0 2 .9 2 2s-.9 2-2 2v4c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2v-4c-1.1 0-2-.9-2-2s.9-2 2-2zm-9 7.5h-2v-2h2v2zm0-4.5h-2v-2h2v2zm0-4.5h-2v-2h2v2z"/>
+              </svg>
+            </span>
+            <span class="nav-text">山水胜境</span>
           </router-link>
           <router-link to="/community" class="nav-item" :class="{ active: $route.path.startsWith('/community') }">
-            <span class="nav-icon">📷</span>
-            <span class="nav-text">社区</span>
+            <span class="nav-icon">
+              <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
+                <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/>
+              </svg>
+            </span>
+            <span class="nav-text">人文纪行</span>
           </router-link>
         </nav>
 
@@ -47,6 +91,7 @@
               placeholder="搜索非遗好物..."
               size="default"
               @keyup.enter="handleSearch"
+              class="miao-search"
             >
               <template #prefix>
                 <el-icon><Search /></el-icon>
@@ -56,20 +101,20 @@
 
           <template v-if="userStore.isLoggedIn">
             <el-badge :value="3" class="header-badge">
-              <el-button circle>
+              <el-button circle class="miao-btn">
                 <el-icon><Bell /></el-icon>
               </el-button>
             </el-badge>
             <el-dropdown trigger="click" class="user-dropdown">
               <span class="user-info">
-                <el-avatar :size="36" :src="userStore.user?.avatar">
+                <el-avatar :size="36" :src="userStore.user?.avatar" class="miao-avatar">
                   {{ userStore.user?.nickname?.slice(0, 1) || '游' }}
                 </el-avatar>
               </span>
               <template #dropdown>
-                <el-dropdown-menu>
+                <el-dropdown-menu class="miao-dropdown">
                   <div class="dropdown-user-info">
-                    <el-avatar :size="48">{{ userStore.user?.nickname?.slice(0, 1) || '游' }}</el-avatar>
+                    <el-avatar :size="48" class="miao-avatar-lg">{{ userStore.user?.nickname?.slice(0, 1) || '游' }}</el-avatar>
                     <div class="dropdown-user-detail">
                       <span class="dropdown-username">{{ userStore.user?.nickname || '游客' }}</span>
                       <span class="dropdown-userphone">{{ userStore.user?.phone || '' }}</span>
@@ -97,17 +142,17 @@
           <template v-else>
             <el-button type="primary" @click="$router.push('/login')" class="login-btn">
               <el-icon><User /></el-icon>
-              登录 / 注册
+              登录
             </el-button>
           </template>
         </div>
       </div>
-    </header>
 
-    <!-- 苗族风格装饰条 -->
-    <div class="miao-decoration">
-      <div class="decoration-line"></div>
-    </div>
+      <!-- 苗族装饰纹样底部 -->
+      <div class="miao-pattern-bottom">
+        <div class="pattern-line"></div>
+      </div>
+    </header>
 
     <!-- 主内容区 -->
     <main class="main-content">
@@ -231,19 +276,90 @@ const handleLogout = () => {
   background: var(--bg-gradient);
 }
 
-// 顶部导航
+// 顶部导航 - 苗族风格
 .header {
-  background: white;
+  background: linear-gradient(135deg, #fff 0%, #faf8f5 100%);
   position: sticky;
   top: 0;
   z-index: 1000;
-  box-shadow: 0 2px 16px rgba(26, 54, 93, 0.08);
+  box-shadow: 0 4px 20px rgba(26, 54, 93, 0.08);
+
+  // 顶部苗族纹样
+  .miao-pattern-top {
+    height: 6px;
+    background: linear-gradient(90deg,
+      #1a365d 0%,
+      #d4af37 20%,
+      #8b4513 40%,
+      #d4af37 60%,
+      #1a365d 80%,
+      #d4af37 100%
+    );
+    position: relative;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg,
+        transparent 0%,
+        rgba(212, 175, 55, 0.5) 50%,
+        transparent 100%
+      );
+    }
+  }
 
   .header-content {
     display: flex;
     align-items: center;
     height: 72px;
     gap: 40px;
+  }
+
+  // 底部苗族装饰
+  .miao-pattern-bottom {
+    height: 4px;
+    background: linear-gradient(90deg,
+      #d4af37 0%,
+      #1a365d 25%,
+      #d4af37 50%,
+      #1a365d 75%,
+      #d4af37 100%
+    );
+    position: relative;
+
+    .pattern-line {
+      position: absolute;
+      top: -2px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 60px;
+      height: 8px;
+      background: linear-gradient(135deg, #d4af37, #b8860b);
+      border-radius: 0 0 50% 50%;
+
+      &::before,
+      &::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        width: 12px;
+        height: 12px;
+        background: linear-gradient(135deg, #d4af37, #b8860b);
+        border-radius: 50%;
+      }
+
+      &::before {
+        left: -20px;
+      }
+
+      &::after {
+        right: -20px;
+      }
+    }
   }
 }
 
@@ -255,16 +371,20 @@ const handleLogout = () => {
   text-decoration: none;
 
   .logo-icon {
-    width: 44px;
-    height: 44px;
+    width: 48px;
+    height: 48px;
     border-radius: 12px;
     overflow: hidden;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
+    background: linear-gradient(135deg, #1a365d, #2d4a7c);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px;
 
-    img {
+    .logo-svg {
       width: 100%;
       height: 100%;
-      object-fit: cover;
     }
   }
 
@@ -273,16 +393,17 @@ const handleLogout = () => {
     flex-direction: column;
 
     .logo-title {
-      font-size: 20px;
+      font-size: 22px;
       font-weight: 700;
       color: var(--primary-color);
-      font-family: 'Noto Serif SC', serif;
+      font-family: 'Noto Serif SC', 'Songti SC', serif;
+      letter-spacing: 2px;
     }
 
     .logo-subtitle {
-      font-size: 10px;
-      color: var(--text-muted);
-      letter-spacing: 2px;
+      font-size: 11px;
+      color: var(--accent-color);
+      letter-spacing: 1px;
     }
   }
 }
@@ -291,36 +412,71 @@ const handleLogout = () => {
 .nav {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 4px;
   flex: 1;
   justify-content: center;
 
   .nav-item {
     display: flex;
     align-items: center;
-    gap: 6px;
-    padding: 10px 20px;
+    gap: 8px;
+    padding: 12px 20px;
     border-radius: var(--radius-lg);
     text-decoration: none;
     transition: all var(--transition-base);
     color: var(--text-color);
     font-size: 15px;
+    position: relative;
+    overflow: hidden;
 
     .nav-icon {
-      font-size: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--primary-color);
+      transition: all var(--transition-base);
+    }
+
+    &::before {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%) scaleX(0);
+      width: 60%;
+      height: 3px;
+      background: linear-gradient(90deg, var(--accent-color), #b8860b);
+      border-radius: 3px 3px 0 0;
+      transition: transform 0.3s ease;
     }
 
     &:hover {
-      background: rgba(212, 175, 55, 0.1);
-      color: var(--accent-dark);
+      background: rgba(212, 175, 55, 0.08);
+      color: var(--primary-color);
+
+      .nav-icon {
+        color: var(--accent-color);
+        transform: translateY(-2px);
+      }
+
+      &::before {
+        transform: translateX(-50%) scaleX(1);
+      }
     }
 
     &.active {
-      background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+      background: linear-gradient(135deg, var(--primary-color), #2d5a87);
       color: white;
+      box-shadow: 0 4px 15px rgba(26, 54, 93, 0.25);
 
       .nav-icon {
-        transform: scale(1.1);
+        color: var(--accent-color);
+        transform: translateY(-2px);
+      }
+
+      &::before {
+        background: var(--accent-color);
+        transform: translateX(-50%) scaleX(1);
       }
     }
   }
@@ -333,17 +489,25 @@ const handleLogout = () => {
   gap: 16px;
 
   .search-box {
-    :deep(.el-input__wrapper) {
-      border-radius: var(--radius-full);
-      padding: 8px 16px;
-      background: var(--bg-light);
-      border: 1px solid transparent;
-      transition: all var(--transition-fast);
+    :deep(.miao-search) {
+      .el-input__wrapper {
+        border-radius: 24px;
+        padding: 8px 16px;
+        background: var(--bg-light);
+        border: 2px solid transparent;
+        transition: all var(--transition-fast);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 
-      &:hover,
-      &.is-focus {
-        border-color: var(--accent-color);
-        background: white;
+        &:hover,
+        &.is-focus {
+          border-color: var(--accent-color);
+          background: white;
+          box-shadow: 0 4px 12px rgba(212, 175, 55, 0.15);
+        }
+
+        .el-input__inner {
+          color: var(--text-color);
+        }
       }
     }
   }
@@ -351,6 +515,17 @@ const handleLogout = () => {
   .header-badge {
     :deep(.el-badge__content) {
       background: var(--chinese-red);
+    }
+  }
+
+  .miao-btn {
+    background: var(--bg-light);
+    border: 1px solid var(--border-color);
+
+    &:hover {
+      background: white;
+      border-color: var(--accent-color);
+      color: var(--accent-color);
     }
   }
 
@@ -363,20 +538,23 @@ const handleLogout = () => {
     align-items: center;
     gap: 8px;
 
-    :deep(.el-avatar) {
-      border: 2px solid var(--accent-color);
+    :deep(.miao-avatar) {
+      border: 3px solid var(--accent-color);
+      box-shadow: 0 2px 8px rgba(212, 175, 55, 0.3);
     }
   }
 
   .login-btn {
-    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    background: linear-gradient(135deg, var(--primary-color), #2d5a87);
     border: none;
     padding: 10px 24px;
     border-radius: var(--radius-lg);
     font-weight: 500;
+    box-shadow: 0 4px 12px rgba(26, 54, 93, 0.2);
 
     &:hover {
-      opacity: 0.9;
+      background: linear-gradient(135deg, #2d5a87, var(--primary-color));
+      box-shadow: 0 6px 16px rgba(26, 54, 93, 0.3);
       transform: translateY(-1px);
     }
   }
@@ -388,8 +566,14 @@ const handleLogout = () => {
   align-items: center;
   gap: 12px;
   padding: 16px;
-  background: var(--bg-light);
+  background: linear-gradient(135deg, var(--bg-light), #fff);
   margin: -8px -12px 8px;
+  border-bottom: 2px solid var(--accent-color);
+
+  :deep(.miao-avatar-lg) {
+    border: 3px solid var(--accent-color);
+    box-shadow: 0 2px 8px rgba(212, 175, 55, 0.3);
+  }
 
   .dropdown-user-detail {
     display: flex;
@@ -397,7 +581,8 @@ const handleLogout = () => {
 
     .dropdown-username {
       font-weight: 600;
-      color: var(--text-color);
+      color: var(--primary-color);
+      font-size: 16px;
     }
 
     .dropdown-userphone {
@@ -407,7 +592,7 @@ const handleLogout = () => {
   }
 }
 
-// 苗族装饰条
+// 苗族装饰条（兼容旧代码）
 .miao-decoration {
   height: 4px;
   background: var(--bg-color);
@@ -654,15 +839,20 @@ const handleLogout = () => {
       height: 60px;
     }
 
+    .miao-pattern-top,
+    .miao-pattern-bottom {
+      display: none;
+    }
+
     .logo {
       .logo-icon {
-        width: 36px;
-        height: 36px;
+        width: 40px;
+        height: 40px;
       }
 
       .logo-text {
         .logo-title {
-          font-size: 16px;
+          font-size: 18px;
         }
 
         .logo-subtitle {

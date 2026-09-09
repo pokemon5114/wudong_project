@@ -88,6 +88,7 @@ async function seed() {
       coverImage: 'https://images.pexels.com/photos/2230285/pexels-photo-2230285.jpeg?auto=compress&cs=tinysrgb&w=800',
       images: JSON.stringify([
         'https://images.pexels.com/photos/2230285/pexels-photo-2230285.jpeg?auto=compress&cs=tinysrgb&w=800',
+        'https://images.pexels.com/photos/1437267/pexels-photo-1437267.jpeg?auto=compress&cs=tinysrgb&w=800',
       ]),
       avgPrice: 5200,
       address: '乌东村四组',
