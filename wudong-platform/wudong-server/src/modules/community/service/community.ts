@@ -1,6 +1,6 @@
 import { Inject, Provide } from '@midwayjs/core';
 import { InjectEntityModel } from '@midwayjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import {
   AppPostEntity,
   AppCommentEntity,
@@ -161,22 +161,38 @@ export class AppCommunityService {
     postId: number;
     page?: number;
     pageSize?: number;
+    userId?: number;
   }) {
     const page = params.page || 1;
     const pageSize = params.pageSize || 20;
 
+    // 按 id 倒序：评论一多时分页只取第 1 页，升序会把新评论挤到最后一页导致「发布后看不到」
     const [list, total] = await this.commentRepo.findAndCount({
       where: { postId: params.postId, status: 1 },
       relations: ['user', 'replyUser'],
-      order: { id: 'ASC' },
+      order: { id: 'DESC' },
       skip: (page - 1) * pageSize,
       take: pageSize,
     });
 
+    // 标注当前用户是否已点赞（前端需要它来正确显示/切换点赞态）
+    let likedIds = new Set<number>();
+    if (params.userId && list.length) {
+      const likes = await this.likeRepo.find({
+        where: {
+          userId: params.userId,
+          likeType: 'comment',
+          relatedId: In(list.map(c => c.id)),
+          status: 1,
+        } as any,
+      });
+      likedIds = new Set(likes.map(l => l.relatedId));
+    }
+
     return {
       code: 0,
       data: {
-        list,
+        list: list.map((c: any) => ({ ...c, isLiked: likedIds.has(c.id) })),
         pagination: {
           page,
           pageSize,
@@ -252,24 +268,71 @@ export class AppCommunityService {
         relatedId: params.relatedId,
         status: 1,
       });
-      await this.likeRepo.save(like);
-      liked = true;
+      try {
+        await this.likeRepo.save(like);
+        liked = true;
+      } catch (err: any) {
+        // 并发下唯一键冲突：说明已存在，按「已点赞」处理，不再插重复行
+        if (err?.driverError?.code === 'ER_DUP_ENTRY' || err?.code === 'ER_DUP_ENTRY') {
+          liked = true;
+        } else {
+          throw err;
+        }
+      }
     }
 
-    // 更新关联数量
+    // 以 DB 计数为准回写，并把权威数字返回给前端（避免前端本地累加导致数字漂移）
+    const count = await this.likeRepo.count({
+      where: { likeType: params.likeType, relatedId: params.relatedId, status: 1 } as any,
+    });
     if (params.likeType === 'post') {
-      const count = await this.likeRepo.count({
-        where: { likeType: 'post', relatedId: params.relatedId, status: 1 } as any,
-      });
       await this.postRepo.update(params.relatedId, { likeCount: count });
     } else if (params.likeType === 'comment') {
-      const count = await this.likeRepo.count({
-        where: { likeType: 'comment', relatedId: params.relatedId, status: 1 } as any,
-      });
       await this.commentRepo.update(params.relatedId, { likeCount: count });
     }
 
-    return { code: 0, data: { liked } };
+    return { code: 0, data: { liked, likeCount: count } };
+  }
+
+  /**
+   * 话题列表。
+   * 后端没有话题表（community_topic 未落地），由帖子标签聚合成话题，
+   * 这样话题页能反映真实内容分布，而不是空壳数据。
+   */
+  async getTopicList() {
+    const posts = await this.postRepo.find({ where: { status: 1 } as any });
+
+    const counter = new Map<string, number>();
+    posts.forEach((p: any) => {
+      if (!p.tags) return;
+      try {
+        (JSON.parse(p.tags) as string[]).forEach(t => {
+          if (t) counter.set(t, (counter.get(t) || 0) + 1);
+        });
+      } catch {
+        // 标签不是合法 JSON 时忽略该条
+      }
+    });
+
+    return Array.from(counter.entries())
+      .sort((a, b) => b[1] - a[1])
+      .map(([name, postCount], i) => ({
+        id: i + 1,
+        name,
+        intro: undefined,
+        postCount,
+        followCount: 0,
+      }));
+  }
+
+  /** 统计用户发布的帖子数与获赞总数（个人主页用） */
+  async getUserStats(userId: number) {
+    const posts = await this.postRepo.find({ where: { userId, status: 1 } as any });
+    return {
+      postCount: posts.length,
+      likeCount: posts.reduce((sum: number, p: any) => sum + (p.likeCount || 0), 0),
+      posts,
+    };
   }
 
   // ===== 收藏管理 =====

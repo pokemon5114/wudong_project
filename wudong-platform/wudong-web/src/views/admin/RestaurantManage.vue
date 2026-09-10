@@ -101,7 +101,12 @@
           <el-input-number v-model="priceValue" :min="0" :precision="2" style="width: 100%" />
         </el-form-item>
         <el-form-item label="联系电话">
-          <el-input v-model="form.phone" placeholder="请输入联系电话" />
+          <el-input
+            v-model="form.phone"
+            placeholder="手机号或座机（如 0855-8234567）"
+            maxlength="20"
+            @input="form.phone = sanitizeBusinessPhone($event)"
+          />
         </el-form-item>
         <el-form-item label="营业时间">
           <el-input v-model="form.businessHours" placeholder="如：09:00-21:00" />
@@ -123,7 +128,8 @@
 
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
-import { getAdminRestaurantList } from '@/api/admin'
+import { getAdminRestaurantList, saveBusiness, deleteBusiness } from '@/api/admin'
+import { sanitizeBusinessPhone, validateBusinessPhone } from '@/utils/validate'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Food, Search, Plus } from '@element-plus/icons-vue'
 
@@ -185,18 +191,47 @@ const openDialog = (edit, row = null) => {
   showDialog.value = true
 }
 
-const handleSave = () => {
-  ElMessage.success('保存成功')
-  showDialog.value = false
-  loadRestaurants()
+const handleSave = async () => {
+  if (!form.name) {
+    ElMessage.warning('请填写餐厅名称')
+    return
+  }
+  const phoneErr = validateBusinessPhone(form.phone)
+  if (phoneErr) {
+    ElMessage.warning(phoneErr)
+    return
+  }
+  try {
+    const res = await saveBusiness('restaurant', { ...form })
+    if (res.code === 0) {
+      ElMessage.success('保存成功')
+      showDialog.value = false
+      loadRestaurants()
+    } else {
+      ElMessage.error(res.message || '保存失败')
+    }
+  } catch (error) {
+    console.error('Failed to save restaurant:', error)
+  }
 }
 
 const handleDelete = async (row) => {
   try {
     await ElMessageBox.confirm('确认删除该餐厅？此操作不可恢复。', '删除确认', { type: 'warning' })
-    ElMessage.success('删除成功')
-    loadRestaurants()
-  } catch (e) {}
+  } catch {
+    return
+  }
+  try {
+    const res = await deleteBusiness('restaurant', row.id)
+    if (res.code === 0) {
+      ElMessage.success('删除成功')
+      loadRestaurants()
+    } else {
+      ElMessage.error(res.message || '删除失败')
+    }
+  } catch (error) {
+    console.error('Failed to delete restaurant:', error)
+  }
 }
 
 onMounted(() => {

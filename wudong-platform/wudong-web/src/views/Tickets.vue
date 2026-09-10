@@ -21,6 +21,7 @@
             v-for="scenic in scenics"
             :key="scenic.id"
             class="scenic-card card"
+            @click="$router.push(`/scenics/${scenic.id}`)"
           >
             <div class="scenic-image">
               <el-image
@@ -55,7 +56,14 @@
                   </span>
                   <span class="ticket-free" v-else>免费</span>
                 </div>
-                <el-button type="primary" size="small" class="detail-btn">查看详情</el-button>
+                <el-button
+                  type="primary"
+                  size="small"
+                  class="detail-btn"
+                  @click.stop="$router.push(`/scenics/${scenic.id}`)"
+                >
+                  查看详情
+                </el-button>
               </div>
             </div>
           </div>

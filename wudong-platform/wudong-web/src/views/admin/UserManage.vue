@@ -100,7 +100,7 @@
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
-import { getUserList } from '@/api/admin'
+import { getUserList, setUserStatus } from '@/api/admin'
 import { ElMessage } from 'element-plus'
 import { User, Search } from '@element-plus/icons-vue'
 
@@ -132,12 +132,24 @@ const loadUsers = async () => {
 }
 
 const viewUser = (user) => {
-  ElMessage.info('查看用户详情：' + user.nickname)
+  ElMessage.info(
+    `用户：${user.nickname || '-'}｜手机号：${user.phone || '-'}｜订单数：${user.orderCount ?? 0}｜收藏数：${user.favoriteCount ?? 0}`
+  )
 }
 
-const toggleStatus = (user) => {
-  user.status = user.status === 1 ? 0 : 1
-  ElMessage.success(`用户已${user.status === 1 ? '启用' : '禁用'}`)
+const toggleStatus = async (user) => {
+  const next = user.status === 1 ? 0 : 1
+  try {
+    const res = await setUserStatus(user.id, next)
+    if (res.code === 0) {
+      user.status = next
+      ElMessage.success(`用户已${next === 1 ? '启用' : '封禁'}`)
+    } else {
+      ElMessage.error(res.message || '操作失败')
+    }
+  } catch (error) {
+    console.error('Failed to toggle user status:', error)
+  }
 }
 
 onMounted(() => { loadUsers() })

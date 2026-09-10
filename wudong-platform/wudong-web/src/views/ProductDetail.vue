@@ -122,16 +122,16 @@
                 </div>
               </div>
               <div class="action-buttons">
-                <el-button type="primary" size="large" class="btn-buy" @click="handleBuy">
+                <el-button type="primary" size="large" class="btn-buy" :loading="buying" @click="handleBuy">
                   <el-icon><ShoppingCart /></el-icon>
                   立即购买
                 </el-button>
-                <el-button size="large" class="btn-cart" @click="handleAddCart">
+                <el-button size="large" class="btn-cart" :loading="addingCart" @click="handleAddCart">
                   <el-icon><ShoppingCart /></el-icon>
                   加入购物车
                 </el-button>
                 <el-button size="large" circle @click="handleCollect">
-                  <el-icon><Star /></el-icon>
+                  <el-icon><Star :class="{ 'is-collected': collected }" /></el-icon>
                 </el-button>
               </div>
             </div>
@@ -142,7 +142,7 @@
                 <span>7天无理由退换</span>
               </div>
               <div class="service-item">
-                <el-icon><Shield /></el-icon>
+                <el-icon><Medal /></el-icon>
                 <span>正品保证</span>
               </div>
               <div class="service-item">
@@ -226,15 +226,23 @@ import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import {
   HomeFilled, Star, Goods, Box, Document, Collection,
-  Minus, Plus, ShoppingCart, CircleCheck, Shield, Van, Headset
+  Minus, Plus, ShoppingCart, CircleCheck, Medal, Van, Headset
 } from '@element-plus/icons-vue'
 import { getProductDetail } from '@/api/product'
+import { addToCart } from '@/api/cart'
+import { toggleFavorite } from '@/api/community'
+import { createOrder } from '@/api/ticket'
+import { useUserStore } from '@/stores/user'
 import { ElMessage } from 'element-plus'
 
 const route = useRoute()
 const router = useRouter()
+const userStore = useUserStore()
 
 const loading = ref(false)
+const addingCart = ref(false)
+const buying = ref(false)
+const collected = ref(false)
 const product = ref({})
 const quantity = ref(1)
 const activeTab = ref('detail')
@@ -279,16 +287,89 @@ const selectSku = (sku) => {
   selectedSku.value = sku.id
 }
 
-const handleBuy = () => {
-  ElMessage.info('购买功能开发中')
+const handleBuy = async () => {
+  if (!userStore.isLoggedIn) {
+    ElMessage.warning('请先登录')
+    router.push('/login')
+    return
+  }
+  if (!product.value.id) {
+    ElMessage.error('商品信息未加载完成')
+    return
+  }
+  if (product.value.stock !== undefined && product.value.stock <= 0) {
+    ElMessage.warning('该商品已售罄')
+    return
+  }
+
+  buying.value = true
+  try {
+    // 服务端会按 relatedId 重算价格并扣库存（客户端不传价）
+    const res = await createOrder({
+      orderType: 'product',
+      relatedId: product.value.id,
+      quantity: quantity.value,
+    })
+    if (res.code === 0) {
+      ElMessage.success('下单成功，请前往订单中心支付')
+      router.push('/orders')
+    } else {
+      ElMessage.error(res.message || '下单失败')
+    }
+  } catch (error) {
+    console.error('Failed to create order:', error)
+  } finally {
+    buying.value = false
+  }
 }
 
-const handleAddCart = () => {
-  ElMessage.success('已加入购物车')
+const handleAddCart = async () => {
+  if (!userStore.isLoggedIn) {
+    ElMessage.warning('请先登录')
+    router.push('/login')
+    return
+  }
+  if (!product.value.id) {
+    ElMessage.error('商品信息未加载完成')
+    return
+  }
+  if (product.value.stock !== undefined && product.value.stock <= 0) {
+    ElMessage.warning('该商品已售罄')
+    return
+  }
+
+  addingCart.value = true
+  try {
+    const res = await addToCart({ productId: product.value.id, quantity: quantity.value })
+    if (res.code === 0) {
+      ElMessage.success('已加入购物车')
+    } else {
+      ElMessage.error(res.message || '加入购物车失败')
+    }
+  } catch (error) {
+    console.error('Failed to add to cart:', error)
+  } finally {
+    addingCart.value = false
+  }
 }
 
-const handleCollect = () => {
-  ElMessage.success('已收藏')
+const handleCollect = async () => {
+  if (!userStore.isLoggedIn) {
+    ElMessage.warning('请先登录')
+    router.push('/login')
+    return
+  }
+  try {
+    const res = await toggleFavorite(userStore.user.id, 'product', product.value.id)
+    if (res.code === 0) {
+      collected.value = !!res.data?.favorited
+      ElMessage.success(collected.value ? '已收藏' : '已取消收藏')
+    } else {
+      ElMessage.error(res.message || '操作失败')
+    }
+  } catch (error) {
+    console.error('Failed to toggle favorite:', error)
+  }
 }
 
 const formatTime = (time) => {

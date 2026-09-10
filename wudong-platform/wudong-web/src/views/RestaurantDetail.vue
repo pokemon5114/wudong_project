@@ -21,7 +21,7 @@
         </el-breadcrumb>
       </div>
 
-      <div class="restaurant-content" v-loading="loading">
+      <div class="restaurant-content" v-loading="loading" v-if="restaurant.id">
         <!-- 基本信息 -->
         <div class="restaurant-header card">
           <div class="header-info">
@@ -71,9 +71,14 @@
                 <p class="dish-desc">{{ dish.description }}</p>
                 <div class="dish-footer">
                   <span class="dish-price">¥{{ (dish.price / 100).toFixed(0) }}</span>
-                  <el-button type="primary" size="small" @click="handleOrderDish(dish)" class="order-btn">
+                  <el-button
+                    :type="selectedDishes.some(d => d.id === dish.id) ? 'warning' : 'primary'"
+                    size="small"
+                    @click="handleOrderDish(dish)"
+                    class="order-btn"
+                  >
                     <el-icon><ShoppingCart /></el-icon>
-                    点餐
+                    {{ selectedDishes.some(d => d.id === dish.id) ? `已选 ¥${(dish.price / 100).toFixed(0)}` : '点餐' }}
                   </el-button>
                 </div>
               </div>
@@ -118,15 +123,47 @@
                   </el-col>
                   <el-col :span="12">
                     <el-form-item label="联系电话">
-                      <el-input v-model="bookingForm.phone" placeholder="请输入联系电话" />
+                      <el-input
+                        v-model="bookingForm.phone"
+                        placeholder="请输入 11 位手机号"
+                        maxlength="11"
+                        @input="bookingForm.phone = sanitizePhone($event)"
+                      />
                     </el-form-item>
                   </el-col>
                 </el-row>
+                <el-form-item label="预点菜" v-if="selectedDishes.length">
+                  <div class="selected-dishes">
+                    <el-tag
+                      v-for="d in selectedDishes"
+                      :key="d.id"
+                      closable
+                      type="warning"
+                      @close="removeDish(d)"
+                    >
+                      {{ d.name }} ¥{{ (d.price / 100).toFixed(0) }}
+                    </el-tag>
+                    <span class="dishes-tip">将随订座一并提交</span>
+                  </div>
+
+                  <!-- 费用明细 -->
+                  <div class="bill">
+                    <div class="bill-row" v-for="d in selectedDishes" :key="'b' + d.id">
+                      <span class="bill-name">{{ d.name }}</span>
+                      <span class="bill-price">¥{{ (d.price / 100).toFixed(2) }}</span>
+                    </div>
+                    <div class="bill-total">
+                      <span>合计（{{ selectedDishes.length }} 道菜）</span>
+                      <span class="total">¥{{ dishesTotal }}</span>
+                    </div>
+                    <p class="bill-tip">餐位免费预约，费用以到店实际消费为准</p>
+                  </div>
+                </el-form-item>
                 <el-form-item label="备注">
                   <el-input v-model="bookingForm.remark" type="textarea" :rows="2" placeholder="其他要求（选填）" />
                 </el-form-item>
                 <el-form-item>
-                  <el-button type="primary" size="large" @click="handleBooking" class="book-btn">
+                  <el-button type="primary" size="large" :loading="booking" @click="handleBooking" class="book-btn">
                     <el-icon><Calendar /></el-icon>
                     立即预订
                   </el-button>
@@ -173,20 +210,33 @@
           </div>
         </div>
       </div>
+
+      <!-- 餐厅不存在 / 已下架时的兜底，避免出现空白页 -->
+      <div v-else-if="!loading" class="detail-empty">
+        <el-empty description="餐厅不存在或已下架">
+          <el-button type="primary" @click="$router.push('/restaurants')">返回餐饮美食</el-button>
+        </el-empty>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { ref, reactive, computed, onMounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { Location, Clock, Phone, Calendar, ShoppingCart } from '@element-plus/icons-vue'
-import { getRestaurantDetail, getDishList } from '@/api/restaurant'
+import { getRestaurantDetail, getDishList, getReviewList } from '@/api/restaurant'
+import { createOrder } from '@/api/ticket'
+import { useUserStore } from '@/stores/user'
+import { sanitizePhone, validatePhone } from '@/utils/validate'
 import { ElMessage } from 'element-plus'
 
 const route = useRoute()
 
 const loading = ref(false)
+const booking = ref(false)
+const router = useRouter()
+const userStore = useUserStore()
 const restaurant = ref({})
 const dishes = ref([])
 const reviews = ref([])
@@ -206,11 +256,15 @@ const loadRestaurant = async () => {
     const res = await getRestaurantDetail(route.params.id)
     if (res.code === 0) {
       restaurant.value = res.data
-      reviews.value = res.data.reviews || []
     }
+    // 菜品接口返回的是裸数组（不是 {list}）
     const dishRes = await getDishList(route.params.id)
     if (dishRes.code === 0) {
-      dishes.value = dishRes.data.list || []
+      dishes.value = Array.isArray(dishRes.data) ? dishRes.data : dishRes.data?.list || []
+    }
+    const reviewRes = await getReviewList(route.params.id)
+    if (reviewRes.code === 0) {
+      reviews.value = reviewRes.data?.list || []
     }
   } catch (error) {
     console.error('Failed to load restaurant:', error)
@@ -219,20 +273,81 @@ const loadRestaurant = async () => {
   }
 }
 
+// 点餐清单：后端没有「按菜品下单」的模型，预选的菜会随订座一并提交为备注
+const selectedDishes = ref([])
+
+// 预点菜合计（价格是「分」，展示成元）
+const dishesTotal = computed(() => {
+  const fen = selectedDishes.value.reduce((sum, d) => sum + (d.price || 0), 0)
+  return (fen / 100).toFixed(2)
+})
+
 const handleOrderDish = (dish) => {
-  ElMessage.success(`已添加「${dish.name}」到您的点餐清单`)
+  const exist = selectedDishes.value.find((d) => d.id === dish.id)
+  if (exist) {
+    selectedDishes.value = selectedDishes.value.filter((d) => d.id !== dish.id)
+    ElMessage.info(`已移除「${dish.name}」`)
+  } else {
+    selectedDishes.value.push(dish)
+    ElMessage.success(`已添加「${dish.name}」，共 ${selectedDishes.value.length} 道`)
+  }
 }
 
-const handleBooking = () => {
-  if (!bookingForm.contact || !bookingForm.phone) {
-    ElMessage.warning('请填写联系信息')
+const removeDish = (dish) => {
+  selectedDishes.value = selectedDishes.value.filter((d) => d.id !== dish.id)
+}
+
+const handleBooking = async () => {
+  if (!bookingForm.contact) {
+    ElMessage.warning('请填写联系人姓名')
+    return
+  }
+  const phoneErr = validatePhone(bookingForm.phone)
+  if (phoneErr) {
+    ElMessage.warning(phoneErr)
     return
   }
   if (!bookingForm.date || !bookingForm.time) {
     ElMessage.warning('请选择用餐时间')
     return
   }
-  ElMessage.success('预订成功！我们将尽快与您确认')
+  if (!userStore.isLoggedIn) {
+    ElMessage.warning('请先登录')
+    router.push('/login')
+    return
+  }
+
+  booking.value = true
+  try {
+    const dishNote = selectedDishes.value.length
+      ? `预点菜：${selectedDishes.value.map((d) => d.name).join('、')}；`
+      : ''
+    // 预点菜只传 id，价格由服务端查菜品表重算（ADR-5，客户端不传价）
+    const res = await createOrder({
+      orderType: 'food_seat',
+      relatedId: restaurant.value.id,
+      quantity: bookingForm.guests,
+      dishIds: selectedDishes.value.map((d) => d.id),
+      bookDate: bookingForm.date,
+      contactName: bookingForm.contact,
+      contactPhone: bookingForm.phone,
+      remark: `${dishNote}${bookingForm.time}${bookingForm.remark ? ' ' + bookingForm.remark : ''}`,
+    })
+    if (res.code === 0) {
+      ElMessage.success(
+        selectedDishes.value.length
+          ? `预订成功！预点菜合计 ¥${dishesTotal.value}，请前往订单中心查看`
+          : '预订成功！我们将尽快与您确认'
+      )
+      selectedDishes.value = []
+    } else {
+      ElMessage.error(res.message || '预订失败')
+    }
+  } catch (error) {
+    console.error('Failed to book restaurant:', error)
+  } finally {
+    booking.value = false
+  }
 }
 
 const formatTime = (time) => {
@@ -510,6 +625,64 @@ onMounted(() => {
     background: linear-gradient(135deg, var(--chinese-red), #7f1d1d);
     border: none;
     padding: 12px 40px;
+  }
+
+  .selected-dishes {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .dishes-tip {
+    font-size: 12px;
+    color: var(--text-light);
+  }
+
+  // 预点菜费用明细
+  .bill {
+    width: 100%;
+    margin-top: 12px;
+    padding: 16px 18px;
+    background: var(--bg-light);
+    border-radius: var(--radius-md);
+    border: 1px dashed var(--border-color);
+
+    .bill-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      color: var(--text-color);
+      padding: 4px 0;
+
+      .bill-price {
+        color: var(--chinese-red);
+        font-weight: 500;
+      }
+    }
+
+    .bill-total {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid var(--border-color);
+      font-size: 14px;
+      color: var(--text-color);
+
+      .total {
+        font-size: 20px;
+        font-weight: 700;
+        color: var(--chinese-red);
+      }
+    }
+
+    .bill-tip {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--text-light);
+    }
   }
 }
 

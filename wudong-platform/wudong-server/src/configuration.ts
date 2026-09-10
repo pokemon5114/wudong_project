@@ -10,6 +10,7 @@ import * as koa from '@midwayjs/koa';
 import * as validate from '@midwayjs/validate';
 import * as info from '@midwayjs/info';
 import * as staticFile from '@midwayjs/static-file';
+import * as upload from '@midwayjs/upload';
 import * as DefaultConfig from './config/config.default';
 import * as LocalConfig from './config/config.local';
 import * as ProdConfig from './config/config.prod';
@@ -20,6 +21,7 @@ import * as ProdConfig from './config/config.prod';
     staticFile,
     orm,
     validate,
+    upload,
     {
       component: info,
       enabledEnvironment: ['local', 'prod'],

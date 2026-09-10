@@ -19,7 +19,7 @@
         </el-breadcrumb>
       </div>
 
-      <div class="route-content" v-loading="loading">
+      <div class="route-content" v-loading="loading" v-if="routeInfo.id">
         <!-- 路线概览 -->
         <div class="route-overview card">
           <div class="overview-main">
@@ -231,10 +231,20 @@
           <el-input v-model="bookingForm.contact" placeholder="请输入联系人姓名" />
         </el-form-item>
         <el-form-item label="联系电话">
-          <el-input v-model="bookingForm.phone" placeholder="请输入联系电话" />
+          <el-input
+            v-model="bookingForm.phone"
+            placeholder="请输入 11 位手机号"
+            maxlength="11"
+            @input="bookingForm.phone = sanitizePhone($event)"
+          />
         </el-form-item>
         <el-form-item label="身份证号">
-          <el-input v-model="bookingForm.idCard" placeholder="请输入身份证号（用于购买保险）" />
+          <el-input
+            v-model="bookingForm.idCard"
+            placeholder="请输入 18 位身份证号（用于购买保险）"
+            maxlength="18"
+            @input="bookingForm.idCard = sanitizeIdCard($event)"
+          />
         </el-form-item>
         <el-form-item label="备注">
           <el-input v-model="bookingForm.remark" type="textarea" :rows="2" placeholder="其他要求（选填）" />
@@ -246,22 +256,34 @@
       </el-form>
       <template #footer>
         <el-button @click="showBookingDialog = false">取消</el-button>
-        <el-button type="primary" @click="confirmBooking" class="confirm-btn">确认预订</el-button>
+        <el-button type="primary" :loading="booking" @click="confirmBooking" class="confirm-btn">确认预订</el-button>
       </template>
     </el-dialog>
+
+    <!-- 路线不存在 / 已下架时的兜底，避免出现空白页 -->
+    <div v-if="!loading && !routeInfo.id" class="container detail-empty">
+      <el-empty description="路线不存在或已下架">
+        <el-button type="primary" @click="$router.push('/tickets')">返回线路订票</el-button>
+      </el-empty>
+    </div>
   </div>
 </template>
 
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { Location, Clock, User, Timer, Check, Close, Calendar, ChatDotRound, CircleCheck, CircleClose, InfoFilled, Warning } from '@element-plus/icons-vue'
-import { getRouteDetail } from '@/api/ticket'
+import { getRouteDetail, createOrder } from '@/api/ticket'
+import { useUserStore } from '@/stores/user'
+import { sanitizePhone, sanitizeIdCard, validatePhone, validateIdCard } from '@/utils/validate'
 import { ElMessage } from 'element-plus'
 
 const route = useRoute()
 
 const loading = ref(false)
+const booking = ref(false)
+const router = useRouter()
+const userStore = useUserStore()
 const routeInfo = ref({})
 const showBookingDialog = ref(false)
 
@@ -305,21 +327,55 @@ const handleConsult = () => {
   ElMessage.info('客服电话：400-888-8888')
 }
 
-const confirmBooking = () => {
+const confirmBooking = async () => {
   if (!bookingForm.date) {
     ElMessage.warning('请选择出发日期')
     return
   }
-  if (!bookingForm.contact || !bookingForm.phone) {
-    ElMessage.warning('请填写联系信息')
+  if (!bookingForm.contact) {
+    ElMessage.warning('请填写联系人姓名')
     return
   }
-  if (!bookingForm.idCard) {
-    ElMessage.warning('请输入身份证号')
+  const phoneErr = validatePhone(bookingForm.phone)
+  if (phoneErr) {
+    ElMessage.warning(phoneErr)
     return
   }
-  ElMessage.success('预订成功！我们将尽快与您联系确认')
-  showBookingDialog.value = false
+  const idErr = validateIdCard(bookingForm.idCard)
+  if (idErr) {
+    ElMessage.warning(idErr)
+    return
+  }
+  if (!userStore.isLoggedIn) {
+    ElMessage.warning('请先登录')
+    router.push('/login')
+    return
+  }
+
+  booking.value = true
+  try {
+    // 服务端按 routeId 取价并按出发日期占用名额
+    const res = await createOrder({
+      orderType: 'route',
+      relatedId: routeInfo.value.id,
+      quantity: bookingForm.count,
+      bookDate: bookingForm.date,
+      contactName: bookingForm.contact,
+      contactPhone: bookingForm.phone,
+      remark: `身份证:${bookingForm.idCard}${bookingForm.remark ? ' ' + bookingForm.remark : ''}`,
+    })
+    if (res.code === 0) {
+      ElMessage.success('预订成功，请前往订单中心支付')
+      showBookingDialog.value = false
+      router.push('/orders')
+    } else {
+      ElMessage.error(res.message || '预订失败')
+    }
+  } catch (error) {
+    console.error('Failed to book route:', error)
+  } finally {
+    booking.value = false
+  }
 }
 
 onMounted(() => {

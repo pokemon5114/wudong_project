@@ -315,42 +315,6 @@
         </div>
       </div>
     </section>
-
-    <!-- 页脚 -->
-    <footer class="footer">
-      <div class="footer-content container">
-        <div class="footer-main">
-          <div class="footer-brand">
-            <h3>乌东文旅</h3>
-            <p>传承千年苗寨文化<br/>体验独特民族风情</p>
-          </div>
-          <div class="footer-links">
-            <div class="link-group">
-              <h4>探索</h4>
-              <router-link to="/products">非遗商品</router-link>
-              <router-link to="/restaurants">餐饮美食</router-link>
-              <router-link to="/hotels">住宿预订</router-link>
-              <router-link to="/tickets">线路订票</router-link>
-            </div>
-            <div class="link-group">
-              <h4>关于</h4>
-              <a href="#">关于我们</a>
-              <a href="#">联系方式</a>
-              <a href="#">商家入驻</a>
-            </div>
-            <div class="link-group">
-              <h4>帮助</h4>
-              <a href="#">常见问题</a>
-              <a href="#">用户协议</a>
-              <a href="#">隐私政策</a>
-            </div>
-          </div>
-        </div>
-        <div class="footer-bottom">
-          <p>© 2024 乌东文旅平台 版权所有</p>
-        </div>
-      </div>
-    </footer>
   </div>
 </template>
 
@@ -1354,67 +1318,7 @@ onMounted(async () => {
   }
 }
 
-// 页脚
-.footer {
-  background: var(--primary-color);
-  color: white;
-  padding: 60px 0 30px;
-
-  .footer-main {
-    display: grid;
-    grid-template-columns: 1fr 2fr;
-    gap: 60px;
-    margin-bottom: 40px;
-  }
-
-  .footer-brand {
-    h3 {
-      font-size: 28px;
-      margin-bottom: 12px;
-    }
-
-    p {
-      font-size: 14px;
-      opacity: 0.8;
-      line-height: 1.8;
-    }
-  }
-
-  .footer-links {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 40px;
-
-    .link-group {
-      h4 {
-        font-size: 16px;
-        margin-bottom: 20px;
-        color: var(--accent-color);
-      }
-
-      a {
-        display: block;
-        font-size: 14px;
-        opacity: 0.8;
-        margin-bottom: 12px;
-        transition: opacity 0.3s;
-
-        &:hover {
-          opacity: 1;
-          color: var(--accent-color);
-        }
-      }
-    }
-  }
-
-  .footer-bottom {
-    text-align: center;
-    padding-top: 30px;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-    font-size: 13px;
-    opacity: 0.6;
-  }
-}
+// 页脚由 MainLayout 统一提供，此处不再重复定义
 
 @media (max-width: 1024px) {
   .module-grid {
@@ -1455,10 +1359,6 @@ onMounted(async () => {
   .hotel-grid,
   .route-grid,
   .restaurant-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .footer .footer-main {
     grid-template-columns: 1fr;
   }
 }

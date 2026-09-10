@@ -32,11 +32,14 @@ async function seed() {
   const hashedPassword = await bcrypt.hash('123456', 10);
 
   const users = [
-    { phone: '13800138000', password: hashedPassword, nickname: '游客管理员', role: 'admin', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=admin' },
-    { phone: '13800138001', password: hashedPassword, nickname: '游客小明', role: 'visitor', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=user1' },
-    { phone: '13800138002', password: hashedPassword, nickname: '苗族姑娘', role: 'visitor', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=user2' },
-    { phone: '13900139001', password: hashedPassword, nickname: '银饰匠人', role: 'merchant', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=merchant' },
-    { phone: '13900139002', password: hashedPassword, nickname: '民宿老板', role: 'merchant', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=merchant2' },
+    { phone: '13800138000', password: hashedPassword, nickname: '乌东文旅小管家', role: 'admin', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=admin' },
+    { phone: '13800138001', password: hashedPassword, nickname: '小满爱旅行', role: 'visitor', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=user1' },
+    { phone: '13800138002', password: hashedPassword, nickname: '苗族姑娘阿朵', role: 'visitor', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=user2' },
+    { phone: '13900139001', password: hashedPassword, nickname: '银饰匠人老吴', role: 'merchant', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=merchant' },
+    { phone: '13900139002', password: hashedPassword, nickname: '半山民宿老杨', role: 'merchant', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=merchant2' },
+    { phone: '13800138003', password: hashedPassword, nickname: '追光者阿远', role: 'visitor', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=user3' },
+    { phone: '13800138004', password: hashedPassword, nickname: '山野食客', role: 'visitor', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=user4' },
+    { phone: '13800138005', password: hashedPassword, nickname: '背包客小舟', role: 'visitor', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=user5' },
   ];
 
   const userRepo = dataSource.getRepository(AppUserEntity);
@@ -48,17 +51,15 @@ async function seed() {
   }
 
   console.log('\n用户种子数据初始化完成！');
-  console.log('测试账号:');
-  console.log('  管理员: 13800138000 / 123456');
-  console.log('  用户1:  13800138001 / 123456');
-  console.log('  用户2:  13800138002 / 123456');
-  console.log('  商家1:  13900139001 / 123456');
-  console.log('  商家2:  13900139002 / 123456');
+  console.log('测试账号（密码均为 123456）:');
+  console.log('  管理员: 13800138000');
+  console.log('  游客:   13800138001 / 13800138002 / 13800138003 / 13800138004 / 13800138005');
+  console.log('  商家:   13900139001 / 13900139002');
 
   await dataSource.destroy();
 }
 
-seed().catch((err) => {
+if (require.main === module) seed().catch((err) => {
   console.error('种子数据初始化失败:', err);
   process.exit(1);
 });

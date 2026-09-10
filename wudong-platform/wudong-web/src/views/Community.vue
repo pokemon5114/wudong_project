@@ -22,7 +22,8 @@
               v-model="newPostContent"
               placeholder="分享你的乌东故事，感受苗寨风情..."
               :rows="2"
-              @focus="showPublishDialog = true"
+              readonly
+              @click="showPublishDialog = true"
             />
             <div class="publish-actions">
               <div class="action-tags">
@@ -166,7 +167,7 @@
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="showPublishDialog = false">取消</el-button>
+        <el-button @click="cancelPublish">取消</el-button>
         <el-button type="primary" :loading="publishing" @click="handlePublish" class="publish-btn">发布</el-button>
       </template>
     </el-dialog>
@@ -234,12 +235,23 @@ const handleLike = async (post) => {
     return
   }
   try {
-    await toggleLike(userStore.user.id, 'post', post.id)
-    post.likeCount += post.isLiked ? -1 : 1
-    post.isLiked = !post.isLiked
+    // 用服务端返回的权威值，别本地累加（否则反复点击会把数字刷高）
+    const res = await toggleLike(userStore.user.id, 'post', post.id)
+    if (res.code === 0) {
+      post.likeCount = res.data.likeCount
+      post.isLiked = res.data.liked
+    }
   } catch (error) {
     console.error('Failed to like:', error)
   }
+}
+
+// 取消发布：关闭弹窗并清空草稿（原来只关弹窗，内容会残留到下次打开）
+const cancelPublish = () => {
+  showPublishDialog.value = false
+  publishForm.content = ''
+  publishForm.tags = []
+  publishForm.location = ''
 }
 
 const handlePublish = async () => {
@@ -259,10 +271,7 @@ const handlePublish = async () => {
 
     if (res.code === 0) {
       ElMessage.success('发布成功')
-      showPublishDialog.value = false
-      publishForm.content = ''
-      publishForm.tags = []
-      publishForm.location = ''
+      cancelPublish()
       loadPosts()
     }
   } catch (error) {
@@ -366,6 +375,8 @@ onMounted(() => {
         padding: 8px 0;
         font-size: 15px;
         resize: none;
+        // 只是个「点击打开弹窗」的入口，真正的输入在弹窗里
+        cursor: pointer;
 
         &::placeholder {
           color: #999;

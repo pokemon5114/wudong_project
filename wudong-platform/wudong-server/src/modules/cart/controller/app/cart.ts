@@ -56,17 +56,22 @@ export class AppCartController {
     if (!userId) {
       return { code: 401, message: '请先登录' };
     }
-    const body = (this.ctx as any).request.body as { id: number; quantity: number };
-    const { id, quantity } = body;
+    const body = (this.ctx as any).request.body as { id: number; quantity?: number; selected?: number };
+    const { id, quantity, selected } = body;
 
-    if (!id || quantity === undefined) {
+    if (!id || (quantity === undefined && selected === undefined)) {
       return { code: 400, message: '参数错误' };
     }
 
     const cartService = await this.ctx.requestContext.getAsync(CartService);
-    const result = await cartService.updateCartItem(id, userId, quantity);
+    if (quantity !== undefined) {
+      await cartService.updateCartItem(id, userId, quantity);
+    }
+    if (selected !== undefined) {
+      await cartService.setChecked(id, userId, selected);
+    }
 
-    return { code: 0, message: '更新成功', data: result };
+    return { code: 0, message: '更新成功' };
   }
 
   /**

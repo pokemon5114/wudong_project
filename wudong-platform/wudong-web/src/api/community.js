@@ -26,8 +26,8 @@ export function deletePost(id, userId) {
 }
 
 // 获取评论列表
-export function getCommentList(postId, page = 1, pageSize = 20) {
-  return request.get('/app/community/comment/list', { params: { postId, page, pageSize } })
+export function getCommentList(postId, page = 1, pageSize = 20, userId) {
+  return request.get('/app/community/comment/list', { params: { postId, page, pageSize, userId } })
 }
 
 // 发布评论
@@ -40,9 +40,14 @@ export function addComment(data) {
   return request.post('/app/community/comment', data)
 }
 
-// 添加回复
+// 添加回复（后端无独立 reply 接口，回复即带 replyUserId 的评论）
 export function addReply(data) {
-  return request.post('/app/community/reply', data)
+  return request.post('/app/community/comment', {
+    postId: data.postId,
+    userId: data.userId,
+    content: data.content,
+    replyUserId: data.replyUserId,
+  })
 }
 
 // 删除评论

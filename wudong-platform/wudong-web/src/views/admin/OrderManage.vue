@@ -94,8 +94,8 @@
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
-import { getAdminOrderList } from '@/api/admin'
-import { ElMessage } from 'element-plus'
+import { getAdminOrderList, processOrder } from '@/api/admin'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { Document, Search } from '@element-plus/icons-vue'
 
 const loading = ref(false)
@@ -136,12 +136,41 @@ const loadOrders = async () => {
 }
 
 const viewDetail = (order) => {
-  ElMessage.info('查看订单详情：' + order.orderNo)
+  ElMessage.info(
+    `订单 ${order.orderNo}｜类型：${order.type}｜金额：¥${((order.totalAmount || 0) / 100).toFixed(2)}｜状态：${order.status}`
+  )
 }
 
-const handleProcess = (order) => {
-  ElMessage.success('订单已处理')
-  loadOrders()
+// 按当前状态推进到下一个合理状态
+const nextAction = (status) => {
+  if (status === 'pending') return { action: 'cancel', label: '取消订单' }
+  if (status === 'paid') return { action: 'complete', label: '完成订单' }
+  if (status === 'completed') return { action: 'refund', label: '退款' }
+  return null
+}
+
+const handleProcess = async (order) => {
+  const next = nextAction(order.status)
+  if (!next) {
+    ElMessage.info('该订单无需处理')
+    return
+  }
+  try {
+    await ElMessageBox.confirm(`确认${next.label}？`, '订单处理', { type: 'warning' })
+  } catch {
+    return
+  }
+  try {
+    const res = await processOrder(order.id, next.action)
+    if (res.code === 0) {
+      ElMessage.success(`${next.label}成功`)
+      loadOrders()
+    } else {
+      ElMessage.error(res.message || '操作失败')
+    }
+  } catch (error) {
+    console.error('Failed to process order:', error)
+  }
 }
 
 onMounted(() => { loadOrders() })

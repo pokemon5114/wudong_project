@@ -1,4 +1,4 @@
-import { Body, Inject, Post, Get, Put, Controller } from '@midwayjs/core';
+import { Body, Inject, Post, Get, Put, Controller, Query } from '@midwayjs/core';
 import { AppUserService } from '../../service/user';
 import { LoginDTO, RegisterDTO } from '../../dto/user';
 import { Context } from '@midwayjs/koa';
@@ -21,8 +21,8 @@ export class AppUserController {
   @Post('/register')
   @Validate()
   async register(@Body() body: RegisterDTO) {
-    const result = await this.appUserService.register(body.phone, body.password, body.nickname);
-    return { code: 0, data: result };
+    // service 已返回 {code,data}，不要再包一层
+    return this.appUserService.register(body.phone, body.password, body.nickname);
   }
 
   /**
@@ -44,8 +44,8 @@ export class AppUserController {
     if (!userId) {
       return { code: 10101, message: '未登录' };
     }
-    const result = await this.appUserService.getUserInfo(userId);
-    return { code: 0, data: result };
+    // service 已返回 {code,data}，不要再包一层（否则前端拿到 {code,data:{code,data}}）
+    return this.appUserService.getUserInfo(userId);
   }
 
   /**
@@ -58,8 +58,35 @@ export class AppUserController {
       return { code: 10101, message: '未登录' };
     }
     const body = this.ctx.request.body as any;
-    const result = await this.appUserService.updateProfile(userId, body);
-    return { code: 0, data: result };
+    return this.appUserService.updateProfile(userId, body);
+  }
+
+  /**
+   * 修改密码
+   */
+  @Put('/password')
+  async changePassword(@Body() body: { oldPassword: string; newPassword: string }) {
+    const userId = this.getLoginUserId();
+    if (!userId) {
+      return { code: 10101, message: '未登录' };
+    }
+    if (!body?.oldPassword || !body?.newPassword) {
+      return { code: 1003, message: '请填写原密码与新密码' };
+    }
+    return this.appUserService.changePassword(userId, body.oldPassword, body.newPassword);
+  }
+
+  /**
+   * 我的收藏（type=product|hotel|restaurant）
+   */
+  @Get('/favorites')
+  async getFavorites(@Query('type') type?: string) {
+    const userId = this.getLoginUserId();
+    if (!userId) {
+      return { code: 10101, message: '未登录' };
+    }
+    const list = await this.appUserService.getFavorites(userId, type || 'product');
+    return { code: 0, data: list };
   }
 
   /**

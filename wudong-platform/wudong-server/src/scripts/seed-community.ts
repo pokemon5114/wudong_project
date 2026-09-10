@@ -1,5 +1,5 @@
 import { DataSource } from 'typeorm';
-import { AppPostEntity, AppCommentEntity } from '../modules/community/entity/community';
+import { AppPostEntity, AppCommentEntity, AppLikeEntity } from '../modules/community/entity/community';
 import { AppUserEntity } from '../modules/user/entity/user';
 
 const dataSource = new DataSource({
@@ -9,7 +9,7 @@ const dataSource = new DataSource({
   username: process.env.DB_USERNAME || 'root',
   password: process.env.DB_PASSWORD || '123456',
   database: process.env.DB_DATABASE || 'wudong_platform',
-  entities: [AppPostEntity, AppCommentEntity, AppUserEntity],
+  entities: [AppPostEntity, AppCommentEntity, AppLikeEntity, AppUserEntity],
   synchronize: true,
 });
 
@@ -17,12 +17,12 @@ async function seed() {
   await dataSource.initialize();
   console.log('数据库连接成功');
 
-  // 清理旧数据
+  // 清理旧数据（点赞要一起清，否则 likeCount 会和实际记录对不上）
+  await dataSource.getRepository(AppLikeEntity).delete({});
   await dataSource.getRepository(AppCommentEntity).delete({});
   await dataSource.getRepository(AppPostEntity).delete({});
   console.log('旧数据已清理');
 
-  // 获取用户
   const userRepo = dataSource.getRepository(AppUserEntity);
   const users = await userRepo.find();
 
@@ -32,133 +32,160 @@ async function seed() {
     return;
   }
 
-  const userId = users[0].id;
+  // 按手机号找用户，避免像以前那样所有内容都挂在 users[0]（管理员）名下
+  const idOf = (phone: string) => {
+    const u = users.find((x) => x.phone === phone);
+    if (!u) throw new Error(`找不到用户 ${phone}，请先执行 seed-user`);
+    return u.id;
+  };
 
-  // 创建帖子
+  // 帖子：不同作者，管理员不参与社区内容
   const posts = [
     {
-      userId,
+      userId: idOf('13800138003'), // 追光者阿远
       content: '乌东梯田的日出真的太美了！清晨五点半登山，看到云海翻涌，太阳从山那边慢慢升起，金色的阳光洒在层层梯田上，简直像仙境一样。下次还要再来！',
-      images: JSON.stringify(['/uploads/post/titian-sunrise-1.jpg', '/uploads/post/titian-sunrise-2.jpg']),
+      images: JSON.stringify([
+        'https://images.pexels.com/photos/1287145/pexels-photo-1287145.jpeg?auto=compress&cs=tinysrgb&w=800',
+        'https://images.pexels.com/photos/210186/pexels-photo-210186.jpeg?auto=compress&cs=tinysrgb&w=800',
+      ]),
       postType: 'photo',
       tags: JSON.stringify(['乌东梯田', '日出', '摄影']),
       location: '乌东村',
-      likeCount: 45,
-      commentCount: 8,
       viewCount: 156,
       isFeatured: 1,
     },
     {
-      userId,
+      userId: idOf('13800138002'), // 苗族姑娘阿朵
       content: '今天在苗家体验了蜡染技艺，太有意思了！老师傅手把手教，从绘制图案到染色，每一步都很有讲究。做出了自己专属的蜡染方巾，带回家做纪念！',
-      images: JSON.stringify(['/uploads/post/laran-1.jpg']),
+      images: JSON.stringify(['https://images.pexels.com/photos/96380/pexels-photo-96380.jpeg?auto=compress&cs=tinysrgb&w=800']),
       postType: 'photo',
       tags: JSON.stringify(['蜡染', '非遗体验', '苗族']),
       location: '苗家蜡染体验坊',
-      likeCount: 38,
-      commentCount: 5,
       viewCount: 89,
       isFeatured: 1,
     },
     {
-      userId,
+      userId: idOf('13800138005'), // 背包客小舟
       content: '住在吊脚楼客栈的第一晚，听着窗外的蛙鸣和溪水声入睡，这种感觉太治愈了。远离城市的喧嚣，回归大自然，这就是向往的生活吧。',
-      images: JSON.stringify(['/uploads/post/diaojiaolou-night-1.jpg']),
+      images: JSON.stringify(['https://images.pexels.com/photos/2310713/pexels-photo-2310713.jpeg?auto=compress&cs=tinysrgb&w=800']),
       postType: 'photo',
       tags: JSON.stringify(['吊脚楼', '民宿', '田园生活']),
       location: '乌东吊脚楼客栈',
-      likeCount: 56,
-      commentCount: 12,
       viewCount: 203,
       isFeatured: 1,
     },
     {
-      userId,
+      userId: idOf('13800138004'), // 山野食客
       content: '苗家酸汤鱼，味道绝了！酸辣开胃，鱼肉鲜嫩，配上当地的野菜，一口气吃了两碗饭。强烈推荐大家来尝尝！',
-      images: JSON.stringify(['/uploads/post/suantangyu-1.jpg']),
+      images: JSON.stringify(['https://images.pexels.com/photos/958545/pexels-photo-958545.jpeg?auto=compress&cs=tinysrgb&w=800']),
       postType: 'photo',
       tags: JSON.stringify(['酸汤鱼', '苗族美食', '美食推荐']),
       location: '苗家酸汤鱼庄',
-      likeCount: 32,
-      commentCount: 6,
       viewCount: 78,
       isFeatured: 0,
     },
     {
-      userId,
+      userId: idOf('13800138001'), // 小满爱旅行
       content: '篝火晚会上和当地苗族同胞一起跳舞，太欢乐了！他们都很热情好客，歌声嘹亮，舞姿优美。虽然动作笨拙，但是很开心！',
-      images: JSON.stringify(['/uploads/post/bonfire-1.jpg', '/uploads/post/bonfire-2.jpg']),
+      images: JSON.stringify([
+        'https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg?auto=compress&cs=tinysrgb&w=800',
+        'https://images.pexels.com/photos/262978/pexels-photo-262978.jpeg?auto=compress&cs=tinysrgb&w=800',
+      ]),
       postType: 'photo',
       tags: JSON.stringify(['篝火晚会', '苗族歌舞', '文化体验']),
       location: '乌东村文化广场',
-      likeCount: 67,
-      commentCount: 15,
       viewCount: 245,
       isFeatured: 1,
     },
     {
-      userId,
+      userId: idOf('13900139001'), // 银饰匠人老吴
       content: '乌东古寨真的太有历史感了！几百年的吊脚楼保存完好，斑驳的木墙诉说着岁月的故事。漫步在青石板路上，仿佛穿越到了过去。',
-      images: JSON.stringify(['/uploads/post/guzhai-1.jpg']),
+      images: JSON.stringify(['https://images.pexels.com/photos/2233729/pexels-photo-2233729.jpeg?auto=compress&cs=tinysrgb&w=800']),
       postType: 'photo',
       tags: JSON.stringify(['古寨', '吊脚楼', '历史']),
       location: '乌东古寨',
-      likeCount: 41,
-      commentCount: 7,
       viewCount: 112,
       isFeatured: 0,
     },
   ];
 
   const postRepo = dataSource.getRepository(AppPostEntity);
+  const commentRepo = dataSource.getRepository(AppCommentEntity);
+  const likeRepo = dataSource.getRepository(AppLikeEntity);
   const savedPosts: AppPostEntity[] = [];
+  const postUserIds: number[] = [];
 
   for (const post of posts) {
-    const entity = postRepo.create(post);
-    const saved = await postRepo.save(entity);
+    const saved = await postRepo.save(postRepo.create(post));
     savedPosts.push(saved);
-    console.log(`帖子已创建: ${post.content.slice(0, 30)}...`);
+    postUserIds.push(post.userId);
+    console.log(`帖子已创建: ${post.content.slice(0, 20)}...`);
   }
 
-  // 为部分帖子创建评论
-  const commentRepo = dataSource.getRepository(AppCommentEntity);
+  // 评论：让不同的人来评论，且不自己评论自己的帖子（否则一眼假）
   const commentsData = [
     { postIdx: 0, comments: [
-      { userId, content: '太美了！求攻略，下次也想去' },
-      { userId, content: '请问几点起床合适？需要带什么装备吗？' },
-      { userId, content: '这个角度拍得真好！' },
+      { phone: '13800138001', content: '太美了！求攻略，下次也想去' },
+      { phone: '13800138004', content: '请问几点起床合适？需要带什么装备吗？' },
+      { phone: '13800138005', content: '这个角度拍得真好！' },
     ]},
     { postIdx: 1, comments: [
-      { userId, content: '蜡染体验看起来很有趣！价格贵吗？' },
-      { userId, content: '我也想体验！可以预约吗？' },
+      { phone: '13800138003', content: '蜡染体验看起来很有趣！价格贵吗？' },
+      { phone: '13800138001', content: '我也想体验！可以预约吗？' },
     ]},
     { postIdx: 4, comments: [
-      { userId, content: '篝火晚会太好玩了！' },
-      { userId, content: '每周都有吗？' },
-      { userId, content: '能教教我那个舞步吗？' },
-      { userId, content: '氛围太好了！' },
+      { phone: '13800138002', content: '篝火晚会太好玩了！' },
+      { phone: '13900139001', content: '每周都有吗？' },
+      { phone: '13800138003', content: '能教教我那个舞步吗？' },
+      { phone: '13800138005', content: '氛围太好了！' },
     ]},
   ];
 
   for (const cd of commentsData) {
     for (const comment of cd.comments) {
-      const entity = commentRepo.create({
-        postId: savedPosts[cd.postIdx].id,
-        ...comment,
-      });
-      await commentRepo.save(entity);
+      await commentRepo.save(
+        commentRepo.create({
+          postId: savedPosts[cd.postIdx].id,
+          userId: idOf(comment.phone),
+          content: comment.content,
+        })
+      );
     }
-    console.log(`评论已创建: ${savedPosts[cd.postIdx].content.slice(0, 20)}...`);
+    console.log(`评论已创建: ${savedPosts[cd.postIdx].content.slice(0, 16)}... x${cd.comments.length}`);
   }
+
+  // 点赞：用真实用户生成记录，并据此回写 likeCount。
+  // 以前 likeCount 是写死的 45/38/56…，但 app_like 里没有任何记录，
+  // 导致用户第一次点赞时计数被重算成 1（数字突然跳水）。
+  const likePlan = [6, 4, 5, 3, 7, 4];
+  let likeTotal = 0;
+  for (let i = 0; i < savedPosts.length; i++) {
+    const post = savedPosts[i];
+    const authorId = postUserIds[i];
+    // 取非作者的用户，按计划数量点赞
+    const likers = users.filter((u) => u.id !== authorId).slice(0, likePlan[i]);
+    for (const liker of likers) {
+      await likeRepo.save(
+        likeRepo.create({ userId: liker.id, likeType: 'post', relatedId: post.id, status: 1 })
+      );
+    }
+    await postRepo.update(post.id, {
+      likeCount: likers.length,
+      commentCount: await commentRepo.count({ where: { postId: post.id, status: 1 } }),
+    });
+    likeTotal += likers.length;
+  }
+  console.log(`点赞已创建: ${likeTotal} 条`);
 
   console.log('\n社区种子数据初始化完成！');
   console.log(`- 帖子: ${savedPosts.length} 个`);
   console.log(`- 评论: ${commentsData.reduce((sum, c) => sum + c.comments.length, 0)} 条`);
+  console.log(`- 点赞: ${likeTotal} 条`);
 
   await dataSource.destroy();
 }
 
-seed().catch((err) => {
+if (require.main === module) seed().catch((err) => {
   console.error('种子数据初始化失败:', err);
   process.exit(1);
 });

@@ -15,7 +15,7 @@
         <aside class="user-sidebar">
           <div class="user-card">
             <div class="avatar-wrapper">
-              <el-avatar :size="80" class="user-avatar">{{ userStore.user?.nickname?.slice(0, 1) || '游' }}</el-avatar>
+              <el-avatar :size="80" :src="userStore.user?.avatar" class="user-avatar">{{ userStore.user?.nickname?.slice(0, 1) || '游' }}</el-avatar>
             </div>
             <h3 class="user-name">{{ userStore.user?.nickname || '游客' }}</h3>
             <p class="user-phone">{{ formatPhone(userStore.user?.phone) }}</p>
@@ -48,15 +48,16 @@
             <el-form :model="infoForm" label-width="100px" class="info-form">
               <el-form-item label="头像">
                 <div class="avatar-upload">
-                  <el-avatar :size="80" class="preview-avatar">{{ userStore.user?.nickname?.slice(0, 1) || '游' }}</el-avatar>
-                  <el-button size="small" class="upload-btn">更换头像</el-button>
+                  <el-avatar :size="80" :src="infoForm.avatar" class="preview-avatar">{{ userStore.user?.nickname?.slice(0, 1) || '游' }}</el-avatar>
+                  <input ref="avatarInput" type="file" accept="image/*" style="display: none" @change="handleAvatarChange" />
+                  <el-button size="small" class="upload-btn" :loading="uploadingAvatar" @click="avatarInput?.click()">更换头像</el-button>
                 </div>
               </el-form-item>
               <el-form-item label="昵称">
                 <el-input v-model="infoForm.nickname" placeholder="请输入昵称" />
               </el-form-item>
               <el-form-item label="手机号">
-                <el-input v-model="infoForm.phone" placeholder="请输入手机号" />
+                <el-input v-model="infoForm.phone" disabled placeholder="手机号为登录账号，不可修改" />
               </el-form-item>
               <el-form-item label="性别">
                 <el-radio-group v-model="infoForm.gender">
@@ -65,14 +66,14 @@
                   <el-radio label="secret">保密</el-radio>
                 </el-radio-group>
               </el-form-item>
-              <el-form-item label="生日">
-                <el-date-picker v-model="infoForm.birthday" type="date" placeholder="选择生日" style="width: 100%" />
+              <el-form-item label="地区">
+                <el-input v-model="infoForm.region" placeholder="请输入地区" />
               </el-form-item>
               <el-form-item label="个人简介">
                 <el-input v-model="infoForm.bio" type="textarea" :rows="4" placeholder="介绍一下自己..." />
               </el-form-item>
               <el-form-item>
-                <el-button type="primary" @click="handleUpdateInfo" class="save-btn">保存修改</el-button>
+                <el-button type="primary" :loading="savingInfo" @click="handleUpdateInfo" class="save-btn">保存修改</el-button>
               </el-form-item>
             </el-form>
           </div>
@@ -148,10 +149,13 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { User, Lock, Star, SwitchButton } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/user'
+import { changePassword, getFavorites } from '@/api/user'
+import { uploadImage } from '@/api/upload'
+import { toggleFavorite } from '@/api/community'
 import { ElMessage } from 'element-plus'
 
 const router = useRouter()
@@ -160,13 +164,22 @@ const userStore = useUserStore()
 const activeMenu = ref('info')
 const favoriteTab = ref('products')
 
+const savingInfo = ref(false)
+const uploadingAvatar = ref(false)
+const avatarInput = ref(null)
+
 const infoForm = reactive({
   nickname: '',
   phone: '',
   gender: 'secret',
-  birthday: '',
+  region: '',
   bio: '',
+  avatar: '',
 })
+
+// 表单用 male/female/secret，数据库用 1/2/0
+const genderToDb = (g) => (g === 'male' ? 1 : g === 'female' ? 2 : 0)
+const genderFromDb = (g) => (g === 1 ? 'male' : g === 2 ? 'female' : 'secret')
 
 const passwordForm = reactive({
   oldPassword: '',
@@ -209,30 +222,125 @@ const formatPhone = (phone) => {
   return phone.replace(/(\d{3})\d{4}(\d{4})/, '$1****$2')
 }
 
-const handleUpdateInfo = () => {
-  ElMessage.success('个人信息已更新')
+const fillInfoForm = () => {
+  const u = userStore.user
+  if (!u) return
+  infoForm.nickname = u.nickname || ''
+  infoForm.phone = u.phone || ''
+  infoForm.gender = genderFromDb(u.gender)
+  infoForm.region = u.region || ''
+  infoForm.bio = u.bio || ''
+  infoForm.avatar = u.avatar || ''
+}
+
+const handleUpdateInfo = async () => {
+  if (!infoForm.nickname.trim()) {
+    ElMessage.warning('昵称不能为空')
+    return
+  }
+  savingInfo.value = true
+  try {
+    // 只提交后端允许修改的字段（手机号是登录账号，不可改）
+    const ok = await userStore.updateProfileAction({
+      nickname: infoForm.nickname,
+      gender: genderToDb(infoForm.gender),
+      region: infoForm.region,
+      bio: infoForm.bio,
+    })
+    if (ok) {
+      ElMessage.success('个人信息已更新')
+      fillInfoForm()
+    } else {
+      ElMessage.error('保存失败，请稍后重试')
+    }
+  } finally {
+    savingInfo.value = false
+  }
+}
+
+const handleAvatarChange = async (e) => {
+  const file = e.target.files?.[0]
+  if (!file) return
+  if (!file.type.startsWith('image/')) {
+    ElMessage.warning('请选择图片文件')
+    return
+  }
+  uploadingAvatar.value = true
+  try {
+    const res = await uploadImage(file)
+    if (res.code === 0 && res.data?.url) {
+      infoForm.avatar = res.data.url
+      const ok = await userStore.updateProfileAction({ avatar: res.data.url })
+      ElMessage[ok ? 'success' : 'error'](ok ? '头像已更新' : '头像保存失败')
+    } else {
+      ElMessage.error(res.message || '上传失败')
+    }
+  } catch (err) {
+    console.error('Avatar upload failed:', err)
+    ElMessage.error('头像上传失败')
+  } finally {
+    uploadingAvatar.value = false
+    if (avatarInput.value) avatarInput.value.value = ''
+  }
 }
 
 const handleChangePassword = async () => {
   try {
     await passwordFormRef.value.validate()
-    ElMessage.success('密码修改成功')
-    passwordForm.oldPassword = ''
-    passwordForm.newPassword = ''
-    passwordForm.confirmPassword = ''
-  } catch (e) {
-    // 验证失败
+  } catch {
+    return // 表单校验失败
+  }
+
+  try {
+    const res = await changePassword({
+      oldPassword: passwordForm.oldPassword,
+      newPassword: passwordForm.newPassword,
+    })
+    if (res.code === 0) {
+      ElMessage.success('密码修改成功')
+      passwordForm.oldPassword = ''
+      passwordForm.newPassword = ''
+      passwordForm.confirmPassword = ''
+    } else {
+      ElMessage.error(res.message || '密码修改失败')
+    }
+  } catch (error) {
+    console.error('Change password failed:', error)
   }
 }
 
-const removeFavorite = (id, type) => {
-  ElMessage.success('已取消收藏')
-  if (type === 'product') {
-    favoriteProducts.value = favoriteProducts.value.filter(item => item.id !== id)
-  } else if (type === 'hotel') {
-    favoriteHotels.value = favoriteHotels.value.filter(item => item.id !== id)
-  } else {
-    favoriteRestaurants.value = favoriteRestaurants.value.filter(item => item.id !== id)
+// ===== 我的收藏 =====
+
+const favTabType = { products: 'product', hotels: 'hotel', restaurants: 'restaurant' }
+
+const loadFavorites = async () => {
+  const type = favTabType[favoriteTab.value]
+  try {
+    const res = await getFavorites(type)
+    if (res.code !== 0) return
+    if (type === 'product') favoriteProducts.value = res.data || []
+    else if (type === 'hotel') favoriteHotels.value = res.data || []
+    else favoriteRestaurants.value = res.data || []
+  } catch (error) {
+    console.error('Load favorites failed:', error)
+  }
+}
+
+watch(favoriteTab, loadFavorites)
+// 首次切换到「我的收藏」时也要加载（切换 tab 不一定触发）
+watch(activeMenu, (m) => { if (m === 'favorites') loadFavorites() })
+
+const removeFavorite = async (id, type) => {
+  try {
+    const res = await toggleFavorite(userStore.user.id, type, id)
+    if (res.code === 0) {
+      ElMessage.success('已取消收藏')
+      loadFavorites()
+    } else {
+      ElMessage.error(res.message || '操作失败')
+    }
+  } catch (error) {
+    console.error('Remove favorite failed:', error)
   }
 }
 
@@ -242,12 +350,10 @@ const handleLogout = () => {
   ElMessage.success('已退出登录')
 }
 
-onMounted(() => {
-  if (userStore.user) {
-    infoForm.nickname = userStore.user.nickname || ''
-    infoForm.phone = userStore.user.phone || ''
-    infoForm.gender = userStore.user.gender || 'secret'
-  }
+onMounted(async () => {
+  // 本地缓存的 user 只有登录返回的少量字段，拉一次完整资料
+  await userStore.fetchUserInfo()
+  fillInfoForm()
 })
 </script>
 

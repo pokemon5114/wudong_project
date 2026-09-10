@@ -17,5 +17,15 @@ export function getUserInfo() {
 
 // 更新用户资料
 export function updateProfile(data) {
-  return request.put('/app/user/update', data)
+  return request.put('/app/user/profile', data)
+}
+
+// 修改密码
+export function changePassword(data) {
+  return request.put('/app/user/password', data)
+}
+
+// 我的收藏（type: product | hotel | restaurant）
+export function getFavorites(type = 'product') {
+  return request.get('/app/user/favorites', { params: { type } })
 }

@@ -165,7 +165,7 @@ async function seed() {
   await dataSource.destroy();
 }
 
-seed().catch((err) => {
+if (require.main === module) seed().catch((err) => {
   console.error('种子数据初始化失败:', err);
   process.exit(1);
 });

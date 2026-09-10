@@ -29,7 +29,7 @@
             <div v-for="item in cartItems" :key="item.id" class="cart-item">
               <el-checkbox
                 v-model="item.selected"
-                @change="updateSelectStatus"
+                @change="updateSelectStatus(item)"
                 class="item-checkbox"
               />
 
@@ -105,6 +105,7 @@
               type="primary"
               class="checkout-btn"
               :disabled="selectedCount === 0"
+              :loading="checkout"
               @click="handleCheckout"
             >
               去结算 ({{ selectedCount }})
@@ -121,7 +122,8 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { Delete } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { getCartList, updateCartItem, removeCartItem } from '@/api/cart'
+import { getCartList, updateCartItem, removeCartItem, selectAllCart } from '@/api/cart'
+import { createOrder } from '@/api/ticket'
 
 const router = useRouter()
 const loading = ref(false)
@@ -158,7 +160,8 @@ const fetchCartList = async () => {
   try {
     const res = await getCartList()
     if (res.code === 0) {
-      cartItems.value = res.data || []
+      // 后端 selected 是 0/1，el-checkbox 的 v-model 需要布尔值，否则渲染成未勾选
+      cartItems.value = (res.data || []).map((item) => ({ ...item, selected: !!item.selected }))
     } else {
       ElMessage.error(res.message || '获取购物车失败')
     }
@@ -169,23 +172,37 @@ const fetchCartList = async () => {
   }
 }
 
-// 全选
-const handleSelectAll = (val) => {
+// 全选（要落库，否则刷新后选择状态丢失）
+const handleSelectAll = async (val) => {
   selectAll.value = val
+  try {
+    await selectAllCart({ selected: val ? 1 : 0 })
+  } catch (error) {
+    console.error('Failed to select all:', error)
+  }
 }
 
-// 更新选中状态
-const updateSelectStatus = () => {
-  // 触发响应式更新
+// 单项勾选落库
+const updateSelectStatus = async (item) => {
+  try {
+    const res = await updateCartItem(item.id, { selected: item.selected ? 1 : 0 })
+    if (res.code !== 0) ElMessage.error(res.message || '操作失败')
+  } catch (error) {
+    console.error('Failed to update selection:', error)
+  }
 }
 
 // 数量变化
 const handleQuantityChange = async (item) => {
   try {
-    await updateCartItem(item.id, { quantity: item.quantity })
-    ElMessage.success('数量已更新')
+    const res = await updateCartItem(item.id, { quantity: item.quantity })
+    if (res.code === 0) {
+      ElMessage.success('数量已更新')
+    } else {
+      ElMessage.error(res.message || '更新失败')
+    }
   } catch (error) {
-    ElMessage.error('更新失败')
+    console.error('Failed to update quantity:', error)
   }
 }
 
@@ -197,26 +214,60 @@ const handleRemove = async (id) => {
       cancelButtonText: '取消',
       type: 'warning'
     })
-
-    await removeCartItem(id)
-    cartItems.value = cartItems.value.filter(item => item.id !== id)
-    ElMessage.success('已删除')
   } catch {
-    // 取消删除
+    return // 用户取消，不是错误
+  }
+
+  try {
+    const res = await removeCartItem(id)
+    if (res.code === 0) {
+      cartItems.value = cartItems.value.filter(item => item.id !== id)
+      ElMessage.success('已删除')
+    } else {
+      ElMessage.error(res.message || '删除失败')
+    }
+  } catch (error) {
+    // 以前这里静默失败，删除出问题时用户看不到任何反馈
+    console.error('Failed to remove cart item:', error)
+    ElMessage.error('删除失败，请稍后重试')
   }
 }
 
 // 去结算
-const handleCheckout = () => {
+const checkout = ref(false)
+const handleCheckout = async () => {
   const selectedItems = cartItems.value.filter(item => item.selected)
   if (selectedItems.length === 0) {
     ElMessage.warning('请选择要结算的商品')
     return
   }
+  if (selectedItems.length > 1) {
+    // 后端没有订单明细表，一次只能对一件商品下单（与小程序端一致的限制）
+    ElMessage.warning('暂不支持多件商品合并结算，请只勾选一件')
+    return
+  }
 
-  // 将选中商品存入本地存储
-  localStorage.setItem('checkoutItems', JSON.stringify(selectedItems))
-  router.push('/orders?type=create')
+  const item = selectedItems[0]
+  checkout.value = true
+  try {
+    const res = await createOrder({
+      orderType: 'product',
+      relatedId: item.productId,
+      quantity: item.quantity,
+    })
+    if (res.code === 0) {
+      // 下单成功后把该商品移出购物车
+      await removeCartItem(item.id)
+      ElMessage.success('下单成功，请前往订单中心支付')
+      router.push('/orders')
+    } else {
+      ElMessage.error(res.message || '下单失败')
+    }
+  } catch (error) {
+    console.error('Checkout failed:', error)
+  } finally {
+    checkout.value = false
+  }
 }
 
 onMounted(() => {

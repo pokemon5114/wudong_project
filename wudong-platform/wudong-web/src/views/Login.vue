@@ -45,7 +45,9 @@
                 v-model="form.phone"
                 placeholder="请输入手机号"
                 size="large"
+                maxlength="11"
                 :prefix-icon="Iphone"
+                @input="form.phone = sanitizePhone($event)"
               />
             </div>
           </el-form-item>
@@ -112,6 +114,7 @@
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
+import { PHONE_RE, sanitizePhone } from '@/utils/validate'
 import { ElMessage } from 'element-plus'
 import { Iphone, Lock, User, InfoFilled } from '@element-plus/icons-vue'
 
@@ -131,7 +134,7 @@ const form = reactive({
 const rules = {
   phone: [
     { required: true, message: '请输入手机号', trigger: 'blur' },
-    { pattern: /^1[3-9]\d{9}$/, message: '请输入正确的手机号', trigger: 'blur' },
+    { pattern: PHONE_RE, message: '请输入 11 位有效手机号', trigger: 'blur' },
   ],
   password: [
     { required: true, message: '请输入密码', trigger: 'blur' },

@@ -100,11 +100,55 @@
           </div>
 
           <template v-if="userStore.isLoggedIn">
-            <el-badge :value="3" class="header-badge">
-              <el-button circle class="miao-btn">
-                <el-icon><Bell /></el-icon>
-              </el-button>
-            </el-badge>
+            <el-popover
+              placement="bottom-end"
+              :width="340"
+              trigger="click"
+              popper-class="notice-popover"
+              @show="loadMessages"
+            >
+              <template #reference>
+                <el-badge :value="unreadCount" :hidden="unreadCount === 0" class="header-badge">
+                  <el-button circle class="miao-btn">
+                    <el-icon><Bell /></el-icon>
+                  </el-button>
+                </el-badge>
+              </template>
+
+              <div class="notice-panel">
+                <div class="notice-header">
+                  <span>通知中心</span>
+                  <el-button
+                    v-if="unreadCount > 0"
+                    link
+                    type="primary"
+                    size="small"
+                    @click="handleReadAll"
+                  >
+                    全部已读
+                  </el-button>
+                </div>
+
+                <div v-if="messages.length === 0" class="notice-empty">暂无通知</div>
+
+                <div v-else class="notice-list">
+                  <div
+                    v-for="m in messages"
+                    :key="m.id"
+                    class="notice-item"
+                    :class="{ unread: !m.isRead }"
+                    @click="handleReadMessage(m)"
+                  >
+                    <div class="notice-title">
+                      <span class="dot" v-if="!m.isRead"></span>
+                      {{ m.title || '通知' }}
+                    </div>
+                    <div class="notice-content">{{ m.content }}</div>
+                  </div>
+                </div>
+              </div>
+            </el-popover>
+
             <el-dropdown trigger="click" class="user-dropdown">
               <span class="user-info">
                 <el-avatar :size="36" :src="userStore.user?.avatar" class="miao-avatar">
@@ -240,26 +284,86 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import {
   Search, Bell, User, List, ShoppingCart, Setting, SwitchButton,
   ChatDotRound, Message, Share, Phone, Location
 } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/user'
+import { getMessageList, getUnreadCount, readMessage, readAllMessages } from '@/api/message'
 import { ElMessage } from 'element-plus'
 
 const router = useRouter()
 const userStore = useUserStore()
 const searchKeyword = ref('')
 
+// 未登录时搜索也应能跳转（逛商品不需要登录）
 const handleSearch = () => {
-  if (!searchKeyword.value.trim()) {
+  const kw = searchKeyword.value.trim()
+  if (!kw) {
     ElMessage.warning('请输入搜索关键词')
     return
   }
-  router.push({ path: '/products', query: { keyword: searchKeyword.value } })
+  router.push({ path: '/products', query: { keyword: kw } })
 }
+
+// ===== 通知中心 =====
+const messages = ref([])
+const unreadCount = ref(0)
+
+const refreshUnread = async () => {
+  if (!userStore.isLoggedIn) {
+    unreadCount.value = 0
+    return
+  }
+  try {
+    const res = await getUnreadCount()
+    if (res.code === 0) unreadCount.value = res.data.unread
+  } catch (error) {
+    console.error('Failed to load unread count:', error)
+  }
+}
+
+const loadMessages = async () => {
+  try {
+    const res = await getMessageList(1, 10)
+    if (res.code === 0) {
+      messages.value = res.data.list || []
+      unreadCount.value = res.data.unread ?? 0
+    }
+  } catch (error) {
+    console.error('Failed to load messages:', error)
+  }
+}
+
+const handleReadMessage = async (m) => {
+  if (m.isRead) return
+  try {
+    const res = await readMessage(m.id)
+    if (res.code === 0) {
+      m.isRead = 1
+      unreadCount.value = Math.max(0, unreadCount.value - 1)
+    }
+  } catch (error) {
+    console.error('Failed to read message:', error)
+  }
+}
+
+const handleReadAll = async () => {
+  try {
+    const res = await readAllMessages()
+    if (res.code === 0) {
+      messages.value = messages.value.map((m) => ({ ...m, isRead: 1 }))
+      unreadCount.value = 0
+    }
+  } catch (error) {
+    console.error('Failed to read all messages:', error)
+  }
+}
+
+// 登录状态变化时刷新未读
+watch(() => userStore.isLoggedIn, refreshUnread, { immediate: true })
 
 const handleLogout = () => {
   userStore.logout()
@@ -316,7 +420,7 @@ const handleLogout = () => {
     display: flex;
     align-items: center;
     height: 72px;
-    gap: 40px;
+    gap: 28px;
   }
 
   // 底部苗族装饰
@@ -368,6 +472,7 @@ const handleLogout = () => {
   display: flex;
   align-items: center;
   gap: 12px;
+  flex-shrink: 0;
   text-decoration: none;
 
   .logo-icon {
@@ -398,12 +503,14 @@ const handleLogout = () => {
       color: var(--primary-color);
       font-family: 'Noto Serif SC', 'Songti SC', serif;
       letter-spacing: 2px;
+      white-space: nowrap;
     }
 
     .logo-subtitle {
       font-size: 11px;
       color: var(--accent-color);
       letter-spacing: 1px;
+      white-space: nowrap;
     }
   }
 }
@@ -420,7 +527,9 @@ const handleLogout = () => {
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 12px 20px;
+    padding: 10px 14px;
+    // 不允许被 flex 压缩，否则中文会逐字折行
+    flex-shrink: 0;
     border-radius: var(--radius-lg);
     text-decoration: none;
     transition: all var(--transition-base);
@@ -433,8 +542,14 @@ const handleLogout = () => {
       display: flex;
       align-items: center;
       justify-content: center;
+      flex-shrink: 0;
       color: var(--primary-color);
       transition: all var(--transition-base);
+    }
+
+    // 导航文字必须单行排列
+    .nav-text {
+      white-space: nowrap;
     }
 
     &::before {
@@ -795,20 +910,24 @@ const handleLogout = () => {
   }
 }
 
-@media (max-width: 992px) {
-  .header {
-    .header-content {
-      gap: 20px;
-    }
-  }
-
+// PC 端设计目标为 1280px+（见技术文档 2.2.4）：
+// 更窄时导航只保留图标，避免中文导航被压缩成逐字折行。
+@media (max-width: 1279.98px) {
   .nav {
     .nav-item {
-      padding: 8px 14px;
+      padding: 8px 12px;
 
       .nav-text {
         display: none;
       }
+    }
+  }
+}
+
+@media (max-width: 992px) {
+  .header {
+    .header-content {
+      gap: 20px;
     }
   }
 
@@ -884,6 +1003,82 @@ const handleLogout = () => {
         .footer-tags {
           display: none;
         }
+      }
+    }
+  }
+}
+</style>
+
+<style lang="scss">
+/* 非 scoped：el-popover 内容会被 teleport 到 body，scoped 样式够不到 */
+.notice-popover {
+  padding: 12px 14px !important;
+
+  .notice-panel {
+    .notice-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-bottom: 10px;
+      margin-bottom: 6px;
+      border-bottom: 1px solid var(--border-color);
+      font-weight: 600;
+      color: var(--primary-color);
+      font-size: 14px;
+    }
+
+    .notice-empty {
+      padding: 28px 0;
+      text-align: center;
+      color: var(--text-light);
+      font-size: 13px;
+    }
+
+    .notice-list {
+      max-height: 340px;
+      overflow-y: auto;
+    }
+
+    .notice-item {
+      padding: 10px 8px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.2s;
+
+      &:hover {
+        background: #faf8f4;
+      }
+
+      &.unread .notice-title {
+        font-weight: 600;
+        color: #1a365d;
+      }
+
+      .notice-title {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 13px;
+        color: #303133;
+        margin-bottom: 4px;
+
+        .dot {
+          width: 6px;
+          height: 6px;
+          border-radius: 50%;
+          background: #991b1b;
+          flex-shrink: 0;
+        }
+      }
+
+      .notice-content {
+        font-size: 12px;
+        color: #6b7280;
+        line-height: 1.5;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
       }
     }
   }

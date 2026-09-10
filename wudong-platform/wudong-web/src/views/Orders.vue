@@ -21,6 +21,13 @@
         </div>
         <div
           class="tab-item"
+          :class="{ active: activeTab === 'goods' }"
+          @click="handleTabChange('goods')"
+        >
+          <span>商品订单</span>
+        </div>
+        <div
+          class="tab-item"
           :class="{ active: activeTab === 'route' }"
           @click="handleTabChange('route')"
         >
@@ -130,7 +137,8 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { getOrderList, cancelOrder, payOrder } from '@/api/ticket'
+import { getOrderList, cancelOrder, payOrder, refundOrder } from '@/api/ticket'
+import { getRoomDetail } from '@/api/hotel'
 import { useUserStore } from '@/stores/user'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Calendar, User, Wallet } from '@element-plus/icons-vue'
@@ -148,11 +156,13 @@ const pagination = reactive({
   total: 0,
 })
 
+// 后端 orderType：product / route / hotel / ticket / food_seat
 const orderTypeMap = {
   all: null,
+  goods: 'product',
   route: 'route',
   hotel: 'hotel',
-  restaurant: 'restaurant',
+  restaurant: 'food_seat',
 }
 
 const loadOrders = async () => {
@@ -247,13 +257,55 @@ const handleCancel = async (order) => {
 }
 
 const handleRefund = async (order) => {
-  ElMessage.info('退款申请已提交，请等待客服处理')
+  try {
+    await ElMessageBox.confirm('确认申请退款？退款后不可撤销。', '申请退款', {
+      confirmButtonText: '确认退款',
+      cancelButtonText: '取消',
+      type: 'warning',
+    })
+    const res = await refundOrder(order.id, userStore.user.id)
+    if (res.code === 0) {
+      ElMessage.success('退款成功')
+      loadOrders()
+    } else {
+      ElMessage.error(res.message || '退款失败')
+    }
+  } catch (e) {
+    if (e !== 'cancel') console.error('Failed to refund:', e)
+  }
 }
 
-const goToDetail = (order) => {
-  const routeType = order.type || 'route'
-  const id = order.items?.[0]?.id || order.relatedId
-  router.push(`/${routeType}s/${id}`)
+// 按订单类型跳到对应详情页
+const DETAIL_PATH = {
+  product: (id) => `/products/${id}`,
+  route: (id) => `/routes/${id}`,
+  ticket: (id) => `/scenics/${id}`,
+  food_seat: (id) => `/restaurants/${id}`,
+}
+
+const goToDetail = async (order) => {
+  if (!order.relatedId) return
+
+  // 酒店订单的 relatedId 是「房型 id」（下单时按房型取价），
+  // 直接当民宿 id 用会跳到错误的民宿、或落到不存在的民宿变成空页面。
+  // 这里先由房型反查所属民宿。
+  if (order.orderType === 'hotel') {
+    try {
+      const res = await getRoomDetail(order.relatedId)
+      const hotelId = res?.data?.hotelId
+      if (hotelId) {
+        router.push(`/hotels/${hotelId}`)
+        return
+      }
+    } catch (error) {
+      console.error('Failed to resolve hotel for order:', error)
+    }
+    ElMessage.warning('该房型对应的民宿已下架')
+    return
+  }
+
+  const build = DETAIL_PATH[order.orderType]
+  if (build) router.push(build(order.relatedId))
 }
 
 const formatTime = (time) => {

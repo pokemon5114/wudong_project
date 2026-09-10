@@ -157,28 +157,84 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { User, Goods, Money, ChatDotRound, Top, Bottom, Clock, ArrowRight } from '@element-plus/icons-vue'
+import { getStatistics, getAdminOrderList } from '@/api/admin'
 
 const chartPeriod = ref('week')
 
 const stats = ref({
-  users: 156,
-  orders: 423,
-  revenue: 125680,
-  posts: 89,
+  users: 0,
+  orders: 0,
+  revenue: 0,
+  posts: 0,
 })
 
-const orderTrend = ref([65, 45, 80, 55, 70, 85, 60])
+// 近 7 天订单数（按下单日期聚合），后端无趋势接口，这里由订单列表推导
+const orderTrend = ref([0, 0, 0, 0, 0, 0, 0])
 const days = ['周一', '周二', '周三', '周四', '周五', '周六', '周日']
 
-const recentOrders = ref([
-  { orderNo: 'WD20260308001', userName: '张三', type: 'route', amount: 29900, status: 'paid', createTime: '2026-03-08 10:30' },
-  { orderNo: 'WD20260308002', userName: '李四', type: 'hotel', amount: 58800, status: 'pending', createTime: '2026-03-08 09:15' },
-  { orderNo: 'WD20260307003', userName: '王五', type: 'restaurant', amount: 6800, status: 'paid', createTime: '2026-03-07 19:45' },
-  { orderNo: 'WD20260307004', userName: '赵六', type: 'route', amount: 19900, status: 'completed', createTime: '2026-03-07 14:20' },
-  { orderNo: 'WD20260306005', userName: '钱七', type: 'hotel', amount: 45600, status: 'paid', createTime: '2026-03-06 16:30' },
-])
+const recentOrders = ref([])
+
+const loadStats = async () => {
+  try {
+    const res = await getStatistics()
+    if (res.code === 0) {
+      stats.value = {
+        users: res.data.totalUsers || 0,
+        orders: res.data.totalOrders || 0,
+        // 后端统计不含营业额，先按订单金额累加
+        revenue: res.data.revenue || 0,
+        posts: res.data.totalPosts || 0,
+      }
+    }
+  } catch (error) {
+    console.error('Failed to load statistics:', error)
+  }
+}
+
+const loadRecentOrders = async () => {
+  try {
+    const res = await getAdminOrderList({ page: 1, pageSize: 5 })
+    if (res.code === 0) {
+      recentOrders.value = (res.data.list || []).map((o) => ({
+        orderNo: o.orderNo,
+        userName: o.userName,
+        type: o.type,
+        amount: o.totalAmount,
+        status: o.status,
+        createTime: o.createTime,
+      }))
+    }
+    // 趋势 + 营业额：拉最近 100 条订单推导（后端无趋势/营收接口）
+    const all = await getAdminOrderList({ page: 1, pageSize: 100 })
+    if (all.code === 0) {
+      const rows = all.data.list || []
+      const buckets = [0, 0, 0, 0, 0, 0, 0]
+      rows.forEach((o) => {
+        if (!o.createTime) return
+        const d = new Date(o.createTime)
+        // getDay(): 0=周日 → 映射到「周一…周日」的索引
+        const idx = (d.getDay() + 6) % 7
+        buckets[idx] += 1
+      })
+      const max = Math.max(...buckets, 1)
+      orderTrend.value = buckets.map((b) => Math.max(8, Math.round((b / max) * 100)))
+
+      // 已支付/已完成的订单金额计为营业额（单位分，与模板 /100 一致）
+      stats.value.revenue = rows
+        .filter((o) => o.status === 'paid' || o.status === 'completed')
+        .reduce((sum, o) => sum + (o.totalAmount || 0), 0)
+    }
+  } catch (error) {
+    console.error('Failed to load orders:', error)
+  }
+}
+
+onMounted(() => {
+  loadStats()
+  loadRecentOrders()
+})
 
 const getTypeText = (type) => {
   const map = { route: '路线', hotel: '民宿', restaurant: '餐饮' }

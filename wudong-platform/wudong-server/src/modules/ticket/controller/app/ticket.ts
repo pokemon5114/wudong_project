@@ -1,10 +1,31 @@
 import { Controller, Get, Post, Inject, Query, Body } from '@midwayjs/core';
+import { Context } from '@midwayjs/koa';
 import { AppTicketService } from '../../service/ticket';
+import { AppUserService } from '../../../user/service/user';
 
 @Controller('/app/ticket')
 export class AppTicketController {
   @Inject()
   ticketService: AppTicketService;
+
+  @Inject()
+  userService: AppUserService;
+
+  @Inject()
+  ctx: Context;
+
+  /**
+   * 从 token 解析登录用户。
+   * 订单接口一律以此为准，不再采信 body/query 里的 userId（防越权）。
+   */
+  private uid(): number | null {
+    const header: any =
+      (this.ctx.get && this.ctx.get('authorization')) || (this.ctx.headers as any)?.authorization || '';
+    const token = String(header).replace(/^Bearer\s+/i, '').trim();
+    if (!token) return null;
+    const payload = this.userService.verifyToken(token);
+    return (payload && payload.userId) || null;
+  }
 
   // ===== 景区 =====
   @Get('/scenic/list')
@@ -59,13 +80,18 @@ export class AppTicketController {
   // ===== 订单 =====
   @Post('/order')
   async createOrder(@Body() body: any) {
-    return this.ticketService.createOrder(body);
+    const userId = this.uid();
+    if (!userId) return { code: 401, message: '请先登录' };
+    // 展开 body 后再覆盖 userId，客户端传的 userId 一律忽略
+    return this.ticketService.createOrder({ ...body, userId });
   }
 
   @Get('/order/list')
   async getOrderList(@Query() query: any) {
+    const userId = this.uid();
+    if (!userId) return { code: 401, message: '请先登录' };
     return this.ticketService.getOrderList({
-      userId: Number(query.userId),
+      userId,
       orderType: query.orderType,
       page: query.page ? Number(query.page) : 1,
       pageSize: query.pageSize ? Number(query.pageSize) : 10,
@@ -73,17 +99,30 @@ export class AppTicketController {
   }
 
   @Get('/order/detail')
-  async getOrderDetail(@Query('id') id: string, @Query('userId') userId: string) {
-    return this.ticketService.getOrderDetail(Number(id), Number(userId));
+  async getOrderDetail(@Query('id') id: string) {
+    const userId = this.uid();
+    if (!userId) return { code: 401, message: '请先登录' };
+    return this.ticketService.getOrderDetail(Number(id), userId);
   }
 
   @Post('/order/cancel')
   async cancelOrder(@Body() body: any) {
-    return this.ticketService.cancelOrder(body.id, body.userId, body.reason);
+    const userId = this.uid();
+    if (!userId) return { code: 401, message: '请先登录' };
+    return this.ticketService.cancelOrder(Number(body.id), userId, body.reason);
   }
 
   @Post('/order/pay')
   async payOrder(@Body() body: any) {
-    return this.ticketService.payOrder(body.id, body.userId, body.payMethod);
+    const userId = this.uid();
+    if (!userId) return { code: 401, message: '请先登录' };
+    return this.ticketService.payOrder(Number(body.id), userId, body.payMethod);
+  }
+
+  @Post('/order/refund')
+  async refundOrder(@Body() body: any) {
+    const userId = this.uid();
+    if (!userId) return { code: 401, message: '请先登录' };
+    return this.ticketService.refundOrder(Number(body.id), userId);
   }
 }

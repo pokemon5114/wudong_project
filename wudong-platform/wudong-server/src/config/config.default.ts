@@ -9,6 +9,7 @@ import { AppScenicEntity, AppRouteEntity, AppOrderEntity } from '../modules/tick
 import { AppPostEntity, AppCommentEntity, AppLikeEntity, AppFavoriteEntity } from '../modules/community/entity/community';
 import { AppAdminEntity, AppConfigEntity, AppLogEntity } from '../modules/admin/entity/admin';
 import { AppCartEntity } from '../modules/cart/entity/cart';
+import { AppMessageEntity } from '../modules/message/entity/message';
 
 export default {
   keys: 'wudong-platform-keys-2026-guizhou',
@@ -43,7 +44,7 @@ export default {
         synchronize: true,
         logging: false,
         charset: 'utf8mb4',
-        entities: [AppUserEntity, AppAddressEntity, AppProductEntity, AppCategoryEntity, AppRestaurantEntity, AppDishEntity, AppTableEntity, AppRestaurantReviewEntity, AppHotelEntity, AppRoomEntity, AppHotelReviewEntity, AppScenicEntity, AppRouteEntity, AppOrderEntity, AppPostEntity, AppCommentEntity, AppLikeEntity, AppFavoriteEntity, AppAdminEntity, AppConfigEntity, AppLogEntity, AppCartEntity],
+        entities: [AppUserEntity, AppAddressEntity, AppProductEntity, AppCategoryEntity, AppRestaurantEntity, AppDishEntity, AppTableEntity, AppRestaurantReviewEntity, AppHotelEntity, AppRoomEntity, AppHotelReviewEntity, AppScenicEntity, AppRouteEntity, AppOrderEntity, AppPostEntity, AppCommentEntity, AppLikeEntity, AppFavoriteEntity, AppAdminEntity, AppConfigEntity, AppLogEntity, AppCartEntity, AppMessageEntity],
       },
     },
   },

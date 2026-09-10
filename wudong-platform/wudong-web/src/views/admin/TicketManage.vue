@@ -144,7 +144,7 @@
 
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
-import { getAdminRouteList } from '@/api/admin'
+import { getAdminRouteList, saveBusiness, deleteBusiness } from '@/api/admin'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Ticket, Search, Plus } from '@element-plus/icons-vue'
 
@@ -191,18 +191,42 @@ const openDialog = (edit, row = null) => {
   showDialog.value = true
 }
 
-const handleSave = () => {
-  ElMessage.success('保存成功')
-  showDialog.value = false
-  loadRoutes()
+const handleSave = async () => {
+  if (!form.name) {
+    ElMessage.warning('请填写路线名称')
+    return
+  }
+  try {
+    const res = await saveBusiness('route', { ...form })
+    if (res.code === 0) {
+      ElMessage.success('保存成功')
+      showDialog.value = false
+      loadRoutes()
+    } else {
+      ElMessage.error(res.message || '保存失败')
+    }
+  } catch (error) {
+    console.error('Failed to save route:', error)
+  }
 }
 
 const handleDelete = async (row) => {
   try {
     await ElMessageBox.confirm('确认删除该路线？此操作不可恢复。', '删除确认', { type: 'warning' })
-    ElMessage.success('删除成功')
-    loadRoutes()
-  } catch (e) {}
+  } catch {
+    return
+  }
+  try {
+    const res = await deleteBusiness('route', row.id)
+    if (res.code === 0) {
+      ElMessage.success('删除成功')
+      loadRoutes()
+    } else {
+      ElMessage.error(res.message || '删除失败')
+    }
+  } catch (error) {
+    console.error('Failed to delete route:', error)
+  }
 }
 
 onMounted(() => { loadRoutes() })

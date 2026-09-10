@@ -85,9 +85,9 @@ async function seed() {
     {
       name: '禾花鱼农家院',
       description: '稻田禾花鱼特色餐厅，体验苗寨田园风味，新鲜食材直供',
-      coverImage: 'https://images.pexels.com/photos/2230285/pexels-photo-2230285.jpeg?auto=compress&cs=tinysrgb&w=800',
+      coverImage: 'https://images.pexels.com/photos/958545/pexels-photo-958545.jpeg?auto=compress&cs=tinysrgb&w=800',
       images: JSON.stringify([
-        'https://images.pexels.com/photos/2230285/pexels-photo-2230285.jpeg?auto=compress&cs=tinysrgb&w=800',
+        'https://images.pexels.com/photos/958545/pexels-photo-958545.jpeg?auto=compress&cs=tinysrgb&w=800',
         'https://images.pexels.com/photos/1437267/pexels-photo-1437267.jpeg?auto=compress&cs=tinysrgb&w=800',
       ]),
       avgPrice: 5200,
@@ -185,7 +185,7 @@ async function seed() {
   await dataSource.destroy();
 }
 
-seed().catch((err) => {
+if (require.main === module) seed().catch((err) => {
   console.error('种子数据初始化失败:', err);
   process.exit(1);
 });

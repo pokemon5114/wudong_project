@@ -81,4 +81,121 @@ export class AppAdminController {
   async getDashboardStats() {
     return this.adminService.getDashboardStats();
   }
+
+  // 前端 api/admin.js 的 getStatistics() 走 /admin/statistics
+  @Get('/statistics')
+  async getStatistics() {
+    return this.adminService.getDashboardStats();
+  }
+
+  // ===== 业务数据管理 =====
+  @Get('/user/list')
+  async getUserList(@Query() query: any) {
+    return this.adminService.getUserList({
+      page: query.page ? Number(query.page) : 1,
+      pageSize: query.pageSize ? Number(query.pageSize) : 10,
+      keyword: query.keyword,
+    });
+  }
+
+  @Get('/order/list')
+  async getOrderList(@Query() query: any) {
+    return this.adminService.getOrderList({
+      page: query.page ? Number(query.page) : 1,
+      pageSize: query.pageSize ? Number(query.pageSize) : 10,
+      keyword: query.keyword,
+      status: query.status,
+      type: query.type,
+    });
+  }
+
+  @Get('/product/list')
+  async getProductList(@Query() query: any) {
+    return this.adminService.getProductList({
+      page: query.page ? Number(query.page) : 1,
+      pageSize: query.pageSize ? Number(query.pageSize) : 10,
+      keyword: query.keyword,
+      categoryId: query.categoryId ? Number(query.categoryId) : undefined,
+    });
+  }
+
+  @Post('/product/save')
+  async saveProduct(@Body() body: any) {
+    return this.adminService.saveProduct(body);
+  }
+
+  @Post('/product/delete')
+  async deleteProduct(@Body('id') id: number) {
+    return this.adminService.deleteProduct(Number(id));
+  }
+
+  @Get('/restaurant/list')
+  async getRestaurantList(@Query() query: any) {
+    return this.adminService.getRestaurantList({
+      page: query.page ? Number(query.page) : 1,
+      pageSize: query.pageSize ? Number(query.pageSize) : 10,
+      keyword: query.keyword,
+    });
+  }
+
+  @Get('/hotel/list')
+  async getHotelList(@Query() query: any) {
+    return this.adminService.getHotelList({
+      page: query.page ? Number(query.page) : 1,
+      pageSize: query.pageSize ? Number(query.pageSize) : 10,
+      keyword: query.keyword,
+    });
+  }
+
+  @Get('/route/list')
+  async getRouteList(@Query() query: any) {
+    return this.adminService.getRouteList({
+      page: query.page ? Number(query.page) : 1,
+      pageSize: query.pageSize ? Number(query.pageSize) : 10,
+      keyword: query.keyword,
+    });
+  }
+
+  @Get('/post/list')
+  async getPostList(@Query() query: any) {
+    return this.adminService.getPostList({
+      page: query.page ? Number(query.page) : 1,
+      pageSize: query.pageSize ? Number(query.pageSize) : 10,
+      keyword: query.keyword,
+    });
+  }
+
+  // ===== 业务数据的写操作 =====
+  @Post('/business/save')
+  async saveBusiness(@Body() body: any) {
+    const { module, ...data } = body;
+    return this.adminService.saveBusiness(module, data);
+  }
+
+  @Post('/business/delete')
+  async deleteBusiness(@Body() body: { module: string; id: number }) {
+    return this.adminService.deleteBusiness(body.module, Number(body.id));
+  }
+
+  @Post('/user/status')
+  async setUserStatus(@Body() body: { id: number; status: number }) {
+    return this.adminService.setUserStatus(Number(body.id), Number(body.status));
+  }
+
+  @Post('/order/process')
+  async processOrder(@Body() body: { id: number; action: string }) {
+    return this.adminService.processOrder(Number(body.id), body.action);
+  }
+
+  /** 帖子设为/取消精华 */
+  @Post('/post/featured')
+  async setPostFeatured(@Body() body: { id: number; isFeatured: number }) {
+    return this.adminService.savePostFeatured(Number(body.id), Number(body.isFeatured));
+  }
+
+  /** 帖子上下架 */
+  @Post('/post/status')
+  async setPostStatus(@Body() body: { id: number; status: number }) {
+    return this.adminService.setPostStatus(Number(body.id), Number(body.status));
+  }
 }

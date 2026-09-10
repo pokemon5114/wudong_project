@@ -102,7 +102,7 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { getAdminPostList } from '@/api/admin'
+import { getAdminPostList, setPostFeatured, setPostStatus, deleteBusiness } from '@/api/admin'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { ChatDotRound, Search, Star, ChatLineRound } from '@element-plus/icons-vue'
 
@@ -132,21 +132,51 @@ const viewPost = (post) => {
   window.open(`/community/post/${post.id}`, '_blank')
 }
 
-const setFeatured = (post) => {
-  ElMessage.success('已将帖子设为精华')
-  loadPosts()
+const setFeatured = async (post) => {
+  const next = post.isFeatured ? 0 : 1
+  try {
+    const res = await setPostFeatured(post.id, next)
+    if (res.code === 0) {
+      ElMessage.success(next ? '已设为精华' : '已取消精华')
+      loadPosts()
+    } else {
+      ElMessage.error(res.message || '操作失败')
+    }
+  } catch (error) {
+    console.error('Failed to set featured:', error)
+  }
 }
 
-const handleStatusChange = (post) => {
-  ElMessage.success('状态已更新')
+const handleStatusChange = async (post) => {
+  try {
+    const res = await setPostStatus(post.id, post.status)
+    if (res.code === 0) {
+      ElMessage.success('状态已更新')
+    } else {
+      ElMessage.error(res.message || '操作失败')
+    }
+  } catch (error) {
+    console.error('Failed to update post status:', error)
+  }
 }
 
 const handleDelete = async (post) => {
   try {
     await ElMessageBox.confirm('确认删除该帖子？此操作不可恢复。', '删除确认', { type: 'warning' })
-    ElMessage.success('删除成功')
-    loadPosts()
-  } catch (e) {}
+  } catch {
+    return
+  }
+  try {
+    const res = await deleteBusiness('post', post.id)
+    if (res.code === 0) {
+      ElMessage.success('删除成功')
+      loadPosts()
+    } else {
+      ElMessage.error(res.message || '删除失败')
+    }
+  } catch (error) {
+    console.error('Failed to delete post:', error)
+  }
 }
 
 onMounted(() => { loadPosts() })

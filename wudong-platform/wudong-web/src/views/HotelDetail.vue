@@ -15,7 +15,7 @@
     </div>
 
     <div class="container">
-      <div class="hotel-content" v-loading="loading">
+      <div class="hotel-content" v-loading="loading" v-if="hotel.id">
         <!-- 民宿头图展示 -->
         <div class="hotel-header">
           <div class="hotel-gallery">
@@ -105,7 +105,7 @@
                   <span><el-icon><User /></el-icon> {{ room.capacity }}人</span>
                   <span><el-icon><House /></el-icon> {{ room.area }}㎡</span>
                   <span v-if="room.hasBreakfast"><el-icon><Coffee /></el-icon> 含早餐</span>
-                  <span v-if="room.hasWifi"><el-icon><Wifi /></el-icon> WiFi</span>
+                  <span v-if="room.hasWifi"><el-icon><Connection /></el-icon> WiFi</span>
                 </div>
                 <p class="room-desc">{{ room.description }}</p>
               </div>
@@ -177,6 +177,13 @@
           </div>
         </div>
       </div>
+
+      <!-- 民宿不存在 / 已下架时的兜底，避免出现空白页 -->
+      <div v-else-if="!loading" class="detail-empty">
+        <el-empty description="民宿不存在或已下架">
+          <el-button type="primary" @click="$router.push('/hotels')">返回住宿预订</el-button>
+        </el-empty>
+      </div>
     </div>
 
     <!-- 预订对话框 -->
@@ -202,7 +209,12 @@
           <el-input v-model="bookingForm.contact" placeholder="请输入联系人姓名" />
         </el-form-item>
         <el-form-item label="联系电话">
-          <el-input v-model="bookingForm.phone" placeholder="请输入联系电话" />
+          <el-input
+            v-model="bookingForm.phone"
+            placeholder="请输入 11 位手机号"
+            maxlength="11"
+            @input="bookingForm.phone = sanitizePhone($event)"
+          />
         </el-form-item>
         <el-form-item label="备注">
           <el-input v-model="bookingForm.remark" type="textarea" :rows="2" placeholder="其他要求（选填）" />
@@ -220,7 +232,7 @@
       </el-form>
       <template #footer>
         <el-button @click="showBookingDialog = false">取消</el-button>
-        <el-button type="primary" size="large" @click="confirmBooking" class="btn-confirm-booking">
+        <el-button type="primary" size="large" :loading="booking" @click="confirmBooking" class="btn-confirm-booking">
           确认预订
         </el-button>
       </template>
@@ -230,17 +242,23 @@
 
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import {
   HomeFilled, Star, LocationFilled, Clock, Phone, User, House,
-  Coffee, Wifi, Calendar, CircleCheck
+  Coffee, Connection, Calendar, CircleCheck
 } from '@element-plus/icons-vue'
-import { getHotelDetail, getRoomList } from '@/api/hotel'
+import { getHotelDetail, getRoomList, getReviewList } from '@/api/hotel'
+import { createOrder } from '@/api/ticket'
+import { useUserStore } from '@/stores/user'
+import { sanitizePhone, validatePhone } from '@/utils/validate'
 import { ElMessage } from 'element-plus'
 
 const route = useRoute()
 
 const loading = ref(false)
+const booking = ref(false)
+const router = useRouter()
+const userStore = useUserStore()
 const hotel = ref({})
 const rooms = ref([])
 const reviews = ref([])
@@ -283,11 +301,15 @@ const loadHotel = async () => {
     const res = await getHotelDetail(route.params.id)
     if (res.code === 0) {
       hotel.value = res.data
-      reviews.value = res.data.reviews || []
     }
+    // 房型接口返回的是裸数组（不是 {list}）
     const roomRes = await getRoomList(route.params.id)
     if (roomRes.code === 0) {
-      rooms.value = roomRes.data.list || []
+      rooms.value = Array.isArray(roomRes.data) ? roomRes.data : roomRes.data?.list || []
+    }
+    const reviewRes = await getReviewList(route.params.id)
+    if (reviewRes.code === 0) {
+      reviews.value = reviewRes.data?.list || []
     }
   } catch (error) {
     console.error('Failed to load hotel:', error)
@@ -305,17 +327,55 @@ const handleBook = (room) => {
   showBookingDialog.value = true
 }
 
-const confirmBooking = () => {
+const confirmBooking = async () => {
   if (!bookingForm.checkIn || !bookingForm.checkOut) {
     ElMessage.warning('请选择入住和退房日期')
     return
   }
-  if (!bookingForm.contact || !bookingForm.phone) {
-    ElMessage.warning('请填写联系信息')
+  if (!selectedRoom.value) {
+    ElMessage.warning('请选择房型')
     return
   }
-  ElMessage.success('预订成功！我们将尽快与您确认')
-  showBookingDialog.value = false
+  if (!bookingForm.contact) {
+    ElMessage.warning('请填写联系人姓名')
+    return
+  }
+  const phoneErr = validatePhone(bookingForm.phone)
+  if (phoneErr) {
+    ElMessage.warning(phoneErr)
+    return
+  }
+  if (!userStore.isLoggedIn) {
+    ElMessage.warning('请先登录')
+    router.push('/login')
+    return
+  }
+
+  booking.value = true
+  try {
+    // 服务端按 roomTypeId 取价并扣房态库存
+    const res = await createOrder({
+      orderType: 'hotel',
+      relatedId: selectedRoom.value.id,
+      quantity: 1,
+      bookDate: bookingForm.checkIn,
+      endDate: bookingForm.checkOut,
+      contactName: bookingForm.contact,
+      contactPhone: bookingForm.phone,
+      remark: bookingForm.remark,
+    })
+    if (res.code === 0) {
+      ElMessage.success('预订成功，请前往订单中心支付')
+      showBookingDialog.value = false
+      router.push('/orders')
+    } else {
+      ElMessage.error(res.message || '预订失败')
+    }
+  } catch (error) {
+    console.error('Failed to book hotel:', error)
+  } finally {
+    booking.value = false
+  }
 }
 
 const formatTime = (time) => {

@@ -94,8 +94,11 @@ export class AppCommentEntity extends BaseEntity {
 
 /**
  * 点赞记录
+ * 唯一键 (userId, likeType, relatedId)：同一用户对同一目标只能有一条，
+ * 否则并发点击会插入重复行、把点赞数刷上去。
  */
 @Entity('app_like')
+@Index(['userId', 'likeType', 'relatedId'], { unique: true })
 export class AppLikeEntity extends BaseEntity {
   @Index()
   @Column({ comment: '用户ID' })
@@ -118,8 +121,10 @@ export class AppLikeEntity extends BaseEntity {
 
 /**
  * 收藏记录
+ * 唯一键 (userId, favoriteType, relatedId)：理由同 app_like
  */
 @Entity('app_favorite')
+@Index(['userId', 'favoriteType', 'relatedId'], { unique: true })
 export class AppFavoriteEntity extends BaseEntity {
   @Index()
   @Column({ comment: '用户ID' })

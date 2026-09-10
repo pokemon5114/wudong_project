@@ -41,13 +41,19 @@
       <div class="product-section">
         <div class="section-header">
           <h2>精选商品</h2>
-          <span class="product-count">共 {{ pagination.total }} 件</span>
+          <div class="header-right">
+            <el-tag v-if="keyword" closable type="warning" size="large" @close="clearKeyword">
+              搜索：{{ keyword }}
+            </el-tag>
+            <span class="product-count">共 {{ pagination.total }} 件</span>
+          </div>
         </div>
 
         <div class="product-list" v-loading="loading">
           <div v-if="products.length === 0 && !loading" class="empty-state">
             <div class="empty-icon">🎨</div>
-            <p>暂无商品</p>
+            <p>{{ keyword ? `没有找到与「${keyword}」相关的商品` : '暂无商品' }}</p>
+            <el-button v-if="keyword" type="primary" plain @click="clearKeyword">清除搜索</el-button>
           </div>
 
           <div class="product-grid">
@@ -110,13 +116,16 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import { View, Medal } from '@element-plus/icons-vue'
 import { getCategoryList, getProductList } from '@/api/product'
 
+const route = useRoute()
 const loading = ref(false)
 const categories = ref([])
 const selectedCategory = ref(null)
+const keyword = ref('')
 const products = ref([])
 const pagination = reactive({
   page: 1,
@@ -152,6 +161,7 @@ const loadProducts = async () => {
   try {
     const res = await getProductList({
       categoryId: selectedCategory.value,
+      keyword: keyword.value || undefined,
       page: pagination.page,
       pageSize: pagination.pageSize,
     })
@@ -172,9 +182,24 @@ const handleCategoryChange = (categoryId) => {
   loadProducts()
 }
 
+const clearKeyword = () => {
+  keyword.value = ''
+  pagination.page = 1
+  loadProducts()
+}
+
+// 顶栏搜索会跳到 /products?keyword=xxx，这里要读 query 才真正筛得出来
+const syncKeywordFromRoute = () => {
+  keyword.value = route.query.keyword ? String(route.query.keyword) : ''
+  pagination.page = 1
+  loadProducts()
+}
+
+watch(() => route.query.keyword, syncKeywordFromRoute)
+
 onMounted(() => {
   loadCategories()
-  loadProducts()
+  syncKeywordFromRoute()
 })
 </script>
 
@@ -319,10 +344,16 @@ onMounted(() => {
       }
     }
 
+    .header-right {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
     .product-count {
       color: var(--text-light);
       font-size: 14px;
-      margin-left: auto;
     }
   }
 }

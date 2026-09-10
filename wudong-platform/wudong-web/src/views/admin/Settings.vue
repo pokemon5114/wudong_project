@@ -126,9 +126,10 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Setting, Monitor, Phone, Calendar, Grid } from '@element-plus/icons-vue'
+import { getConfigs, updateConfig } from '@/api/admin'
 
 const websiteForm = reactive({
   siteName: '乌东文旅综合服务平台',
@@ -157,10 +158,50 @@ const otherForm = reactive({
   maintenanceMode: false,
 })
 
-const saveWebsite = () => ElMessage.success('网站配置已保存')
-const saveContact = () => ElMessage.success('联系方式已保存')
-const saveBooking = () => ElMessage.success('预订配置已保存')
-const saveOther = () => ElMessage.success('其他设置已保存')
+// 每组的表单对应一个配置键，整体以 JSON 存在 app_config 里
+const GROUP_KEYS = {
+  website: 'site_website',
+  contact: 'site_contact',
+  booking: 'site_booking',
+  other: 'site_other',
+}
+
+const loadConfigs = async () => {
+  try {
+    const res = await getConfigs()
+    if (res.code !== 0) return
+    const map = {}
+    ;(res.data || []).forEach((c) => {
+      map[c.configKey] = c.configValue
+    })
+    if (map[GROUP_KEYS.website]) Object.assign(websiteForm, map[GROUP_KEYS.website])
+    if (map[GROUP_KEYS.contact]) Object.assign(contactForm, map[GROUP_KEYS.contact])
+    if (map[GROUP_KEYS.booking]) Object.assign(bookingForm, map[GROUP_KEYS.booking])
+    if (map[GROUP_KEYS.other]) Object.assign(otherForm, map[GROUP_KEYS.other])
+  } catch (error) {
+    console.error('Failed to load configs:', error)
+  }
+}
+
+const saveGroup = async (key, form, label) => {
+  try {
+    const res = await updateConfig(key, { ...form })
+    if (res.code === 0) {
+      ElMessage.success(`${label}已保存`)
+    } else {
+      ElMessage.error(res.message || '保存失败')
+    }
+  } catch (error) {
+    console.error('Failed to save config:', error)
+  }
+}
+
+const saveWebsite = () => saveGroup(GROUP_KEYS.website, websiteForm, '网站配置')
+const saveContact = () => saveGroup(GROUP_KEYS.contact, contactForm, '联系方式')
+const saveBooking = () => saveGroup(GROUP_KEYS.booking, bookingForm, '预订配置')
+const saveOther = () => saveGroup(GROUP_KEYS.other, otherForm, '其他设置')
+
+onMounted(loadConfigs)
 </script>
 
 <style scoped lang="scss">

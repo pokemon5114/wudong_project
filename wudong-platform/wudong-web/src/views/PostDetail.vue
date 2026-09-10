@@ -37,7 +37,7 @@
             </div>
 
             <div class="post-text">
-              <p v-for="(line, idx) in post.content.split('\n')" :key="idx">{{ line }}</p>
+              <p v-for="(line, idx) in (post.content || '').split('\n')" :key="idx">{{ line }}</p>
             </div>
 
             <div class="post-images" v-if="post.images && post.images.length">
@@ -147,8 +147,8 @@
                     :placeholder="`回复 @${comment.user?.nickname || '匿名用户'}...`"
                   />
                   <div class="reply-actions">
-                    <el-button size="small" @click="replyingTo = null">取消</el-button>
-                    <el-button type="primary" size="small" @click="submitReply(comment.id)">发送</el-button>
+                    <el-button size="small" @click="cancelReply">取消</el-button>
+                    <el-button type="primary" size="small" @click="submitReply(comment)">发送</el-button>
                   </div>
                 </div>
               </div>
@@ -168,7 +168,7 @@
 import { ref, reactive, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { Location, Star, Share, ChatDotRound, Collection, User, ChatLineSquare } from '@element-plus/icons-vue'
-import { getPostDetail, toggleLike, addComment, addReply } from '@/api/community'
+import { getPostDetail, getCommentList, toggleLike, toggleFavorite, addComment, addReply } from '@/api/community'
 import { useUserStore } from '@/stores/user'
 import { ElMessage } from 'element-plus'
 
@@ -183,14 +183,37 @@ const replyContent = ref('')
 const replyingTo = ref(null)
 const submitting = ref(false)
 
+const loadComments = async () => {
+  try {
+    // 带上 userId，后端才会返回每条评论的 isLiked（否则点赞状态永远是未点赞）
+    const res = await getCommentList(route.params.id, 1, 50, userStore.user?.id)
+    if (res.code === 0) {
+      // 后端评论是平铺列表（回复以 replyUserId 标记），这里统一映射成视图结构
+      comments.value = (res.data.list || []).map((c) => ({
+        id: c.id,
+        content: c.content,
+        createTime: c.createTime,
+        likeCount: c.likeCount,
+        isLiked: !!c.isLiked,
+        user: c.user,
+        replyUser: c.replyUser,
+        replies: [],
+      }))
+    }
+  } catch (error) {
+    console.error('Failed to load comments:', error)
+  }
+}
+
 const loadPost = async () => {
   loading.value = true
   try {
-    const res = await getPostDetail(route.params.id)
+    // 传 userId 才能拿到真实的 isLiked / isFavorited
+    const res = await getPostDetail(route.params.id, userStore.user?.id)
     if (res.code === 0) {
       post.value = res.data
-      comments.value = res.data.comments || []
     }
+    await loadComments()
   } catch (error) {
     console.error('Failed to load post:', error)
   } finally {
@@ -204,25 +227,43 @@ const handleLike = async () => {
     return
   }
   try {
-    await toggleLike(userStore.user.id, 'post', post.value.id)
-    post.value.likeCount = (post.value.likeCount || 0) + (post.value.isLiked ? -1 : 1)
-    post.value.isLiked = !post.value.isLiked
+    // 以服务端返回的权威值为准，避免本地累加导致数字漂移（可被"刷"）
+    const res = await toggleLike(userStore.user.id, 'post', post.value.id)
+    if (res.code === 0) {
+      post.value.likeCount = res.data.likeCount
+      post.value.isLiked = res.data.liked
+    }
   } catch (error) {
     console.error('Failed to like:', error)
   }
 }
 
-const handleShare = () => {
-  ElMessage.info('链接已复制到剪贴板')
+const handleShare = async () => {
+  try {
+    await navigator.clipboard.writeText(window.location.href)
+    ElMessage.success('链接已复制到剪贴板')
+  } catch {
+    // 非 HTTPS / 无剪贴板权限时的兜底
+    ElMessage.info(`链接：${window.location.href}`)
+  }
 }
 
-const handleFavorite = () => {
+const handleFavorite = async () => {
   if (!userStore.isLoggedIn) {
     ElMessage.warning('请先登录')
     return
   }
-  post.value.isFavorited = !post.value.isFavorited
-  ElMessage.success(post.value.isFavorited ? '已收藏' : '已取消收藏')
+  try {
+    const res = await toggleFavorite(userStore.user.id, 'post', post.value.id)
+    if (res.code === 0) {
+      post.value.isFavorited = !!res.data?.favorited
+      ElMessage.success(post.value.isFavorited ? '已收藏' : '已取消收藏')
+    } else {
+      ElMessage.error(res.message || '操作失败')
+    }
+  } catch (error) {
+    console.error('Failed to toggle favorite:', error)
+  }
 }
 
 const handleComment = async () => {
@@ -254,25 +295,34 @@ const showReplyForm = (comment) => {
     ElMessage.warning('请先登录')
     return
   }
+  // 切换回复对象时清空草稿，避免上一条的内容被带过来
+  if (replyingTo.value !== comment.id) replyContent.value = ''
   replyingTo.value = comment.id
 }
 
-const submitReply = async (commentId) => {
+// 取消回复：关闭输入框并清空草稿（原来只置空 replyingTo，内容会残留）
+const cancelReply = () => {
+  replyingTo.value = null
+  replyContent.value = ''
+}
+
+const submitReply = async (comment) => {
   if (!replyContent.value.trim()) {
     ElMessage.warning('请输入回复内容')
     return
   }
   try {
     const res = await addReply({
+      postId: post.value.id,
       userId: userStore.user.id,
-      commentId,
       content: replyContent.value,
+      replyUserId: comment.user?.id,
     })
     if (res.code === 0) {
       ElMessage.success('回复成功')
       replyContent.value = ''
       replyingTo.value = null
-      loadPost()
+      loadComments()
     }
   } catch (error) {
     console.error('Failed to reply:', error)
@@ -285,9 +335,11 @@ const handleReplyLike = async (comment) => {
     return
   }
   try {
-    await toggleLike(userStore.user.id, 'comment', comment.id)
-    comment.likeCount = (comment.likeCount || 0) + (comment.isLiked ? -1 : 1)
-    comment.isLiked = !comment.isLiked
+    const res = await toggleLike(userStore.user.id, 'comment', comment.id)
+    if (res.code === 0) {
+      comment.likeCount = res.data.likeCount
+      comment.isLiked = res.data.liked
+    }
   } catch (error) {
     console.error('Failed to like comment:', error)
   }

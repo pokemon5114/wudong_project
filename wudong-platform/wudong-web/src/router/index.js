@@ -57,6 +57,12 @@ const routes = [
         meta: { title: '线路订票' },
       },
       {
+        path: 'scenics/:id',
+        name: 'ScenicDetail',
+        component: () => import('@/views/ScenicDetail.vue'),
+        meta: { title: '景区详情' },
+      },
+      {
         path: 'routes/:id',
         name: 'RouteDetail',
         component: () => import('@/views/RouteDetail.vue'),
@@ -180,6 +186,16 @@ const routes = [
 const router = createRouter({
   history: createWebHistory(),
   routes,
+  // 每次路由跳转把页面拉回顶部（用户端与管理端都是 window 滚动）
+  scrollBehavior(to, from, savedPosition) {
+    // 浏览器前进/后退：恢复原来的位置，符合预期
+    if (savedPosition) return savedPosition
+    // 带锚点的跳转：滚到锚点
+    if (to.hash) return { el: to.hash, behavior: 'smooth' }
+    // 其余跳转一律回到顶部。显式 behavior:'auto' 是为了避开 global.scss 里
+    // 的 html{scroll-behavior:smooth}，否则长页面会先滚一段动画再到位
+    return { left: 0, top: 0, behavior: 'auto' }
+  },
 })
 
 // 路由守卫

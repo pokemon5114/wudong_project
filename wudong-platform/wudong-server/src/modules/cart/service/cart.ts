@@ -91,6 +91,22 @@ export class CartService {
   }
 
   /**
+   * 设置单项勾选状态
+   */
+  async setChecked(id: number, userId: number, selected: number) {
+    const item = await this.cartModel.findOne({
+      where: { id, userId } as any,
+    });
+
+    if (!item) {
+      throw new Error('购物车商品不存在');
+    }
+
+    item.selected = selected;
+    return await this.cartModel.save(item);
+  }
+
+  /**
    * 清空购物车
    */
   async clearCart(userId: number) {

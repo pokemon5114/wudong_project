@@ -113,7 +113,12 @@
           <el-input v-model="form.address" placeholder="请输入地址" />
         </el-form-item>
         <el-form-item label="联系电话">
-          <el-input v-model="form.phone" placeholder="请输入联系电话" />
+          <el-input
+            v-model="form.phone"
+            placeholder="手机号或座机（如 0855-8234567）"
+            maxlength="20"
+            @input="form.phone = sanitizeBusinessPhone($event)"
+          />
         </el-form-item>
         <el-form-item label="描述">
           <el-input v-model="form.description" type="textarea" :rows="3" />
@@ -132,7 +137,8 @@
 
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
-import { getAdminHotelList } from '@/api/admin'
+import { getAdminHotelList, saveBusiness, deleteBusiness } from '@/api/admin'
+import { sanitizeBusinessPhone, validateBusinessPhone } from '@/utils/validate'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { House, Search, Plus } from '@element-plus/icons-vue'
 
@@ -178,18 +184,47 @@ const openDialog = (edit, row = null) => {
   showDialog.value = true
 }
 
-const handleSave = () => {
-  ElMessage.success('保存成功')
-  showDialog.value = false
-  loadHotels()
+const handleSave = async () => {
+  if (!form.name) {
+    ElMessage.warning('请填写民宿名称')
+    return
+  }
+  const phoneErr = validateBusinessPhone(form.phone)
+  if (phoneErr) {
+    ElMessage.warning(phoneErr)
+    return
+  }
+  try {
+    const res = await saveBusiness('hotel', { ...form })
+    if (res.code === 0) {
+      ElMessage.success('保存成功')
+      showDialog.value = false
+      loadHotels()
+    } else {
+      ElMessage.error(res.message || '保存失败')
+    }
+  } catch (error) {
+    console.error('Failed to save hotel:', error)
+  }
 }
 
 const handleDelete = async (row) => {
   try {
     await ElMessageBox.confirm('确认删除该民宿？此操作不可恢复。', '删除确认', { type: 'warning' })
-    ElMessage.success('删除成功')
-    loadHotels()
-  } catch (e) {}
+  } catch {
+    return
+  }
+  try {
+    const res = await deleteBusiness('hotel', row.id)
+    if (res.code === 0) {
+      ElMessage.success('删除成功')
+      loadHotels()
+    } else {
+      ElMessage.error(res.message || '删除失败')
+    }
+  } catch (error) {
+    console.error('Failed to delete hotel:', error)
+  }
 }
 
 onMounted(() => { loadHotels() })
