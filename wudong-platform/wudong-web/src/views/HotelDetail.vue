@@ -97,7 +97,7 @@
           <div class="room-list">
             <div v-for="room in rooms" :key="room.id" class="room-card">
               <div class="room-image">
-                <el-image :src="room.image || hotel.coverImage || '/placeholder.svg'" fit="cover" />
+                <el-image :src="room.coverImage || hotel.coverImage || '/placeholder.svg'" fit="cover" />
               </div>
               <div class="room-info">
                 <h3 class="room-name">{{ room.name }}</h3>

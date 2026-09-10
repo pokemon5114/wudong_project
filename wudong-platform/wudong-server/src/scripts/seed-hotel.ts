@@ -30,9 +30,10 @@ async function seed() {
     {
       name: '乌东吊脚楼客栈',
       description: '依山而建的苗家吊脚楼，推窗可见层层梯田，体验原生态苗寨生活，感受千年苗族建筑智慧',
-      coverImage: 'https://images.pexels.com/photos/2747449/pexels-photo-2747449.jpeg?auto=compress&cs=tinysrgb&w=800',
+      coverImage: 'https://images.pexels.com/photos/36647675/pexels-photo-36647675.jpeg?auto=compress&cs=tinysrgb&w=800',
       images: JSON.stringify([
-        'https://images.pexels.com/photos/2747449/pexels-photo-2747449.jpeg?auto=compress&cs=tinysrgb&w=800',
+        'https://images.pexels.com/photos/36647675/pexels-photo-36647675.jpeg?auto=compress&cs=tinysrgb&w=800',
+        'https://images.pexels.com/photos/38186695/pexels-photo-38186695.jpeg?auto=compress&cs=tinysrgb&w=800',
       ]),
       address: '乌东村一组观景台旁',
       longitude: 108.6838,
@@ -51,9 +52,10 @@ async function seed() {
     {
       name: '侗家木楼民宿',
       description: '传统侗族木楼建筑，冬暖夏凉，感受侗族人民的热情好客，体验侗族鼓楼文化',
-      coverImage: 'https://images.pexels.com/photos/2404843/pexels-photo-2404843.jpeg?auto=compress&cs=tinysrgb&w=800',
+      coverImage: 'https://images.pexels.com/photos/17801941/pexels-photo-17801941.jpeg?auto=compress&cs=tinysrgb&w=800',
       images: JSON.stringify([
-        'https://images.pexels.com/photos/2404843/pexels-photo-2404843.jpeg?auto=compress&cs=tinysrgb&w=800',
+        'https://images.pexels.com/photos/17801941/pexels-photo-17801941.jpeg?auto=compress&cs=tinysrgb&w=800',
+        'https://images.pexels.com/photos/1565326/pexels-photo-1565326.jpeg?auto=compress&cs=tinysrgb&w=800',
       ]),
       address: '乌东村二组侗寨鼓楼旁',
       longitude: 108.6862,
@@ -72,9 +74,10 @@ async function seed() {
     {
       name: '乌东梯田观景民宿',
       description: '位于半山腰的精品民宿，视野开阔，是观赏日出云海的绝佳位置，摄影爱好者的天堂',
-      coverImage: 'https://images.pexels.com/photos/3601425/pexels-photo-3601425.jpeg?auto=compress&cs=tinysrgb&w=800',
+      coverImage: 'https://images.pexels.com/photos/14025188/pexels-photo-14025188.jpeg?auto=compress&cs=tinysrgb&w=800',
       images: JSON.stringify([
-        'https://images.pexels.com/photos/3601425/pexels-photo-3601425.jpeg?auto=compress&cs=tinysrgb&w=800',
+        'https://images.pexels.com/photos/14025188/pexels-photo-14025188.jpeg?auto=compress&cs=tinysrgb&w=800',
+        'https://images.pexels.com/photos/35428411/pexels-photo-35428411.jpeg?auto=compress&cs=tinysrgb&w=800',
       ]),
       address: '乌东村三组半山',
       longitude: 108.6818,
@@ -93,10 +96,10 @@ async function seed() {
     {
       name: '苗家田园客栈',
       description: '稻田环绕的田园民宿，清晨闻鸡鸣而起，夜晚听蛙声入睡，体验农耕文化',
-      coverImage: 'https://images.pexels.com/photos/2310713/pexels-photo-2310713.jpeg?auto=compress&cs=tinysrgb&w=800',
+      coverImage: 'https://images.pexels.com/photos/33677662/pexels-photo-33677662.jpeg?auto=compress&cs=tinysrgb&w=800',
       images: JSON.stringify([
-        'https://images.pexels.com/photos/2310713/pexels-photo-2310713.jpeg?auto=compress&cs=tinysrgb&w=800',
-        'https://images.pexels.com/photos/2747449/pexels-photo-2747449.jpeg?auto=compress&cs=tinysrgb&w=800',
+        'https://images.pexels.com/photos/33677662/pexels-photo-33677662.jpeg?auto=compress&cs=tinysrgb&w=800',
+        'https://images.pexels.com/photos/39198174/pexels-photo-39198174.jpeg?auto=compress&cs=tinysrgb&w=800',
       ]),
       address: '乌东村四组农田旁',
       longitude: 108.6885,
@@ -129,24 +132,24 @@ async function seed() {
 
   const roomsData = [
     { hotelIdx: 0, rooms: [
-      { name: '观景大床房', description: '推窗即见梯田', price: 39800, bedType: '大床', capacity: 2, area: 25, floor: 2, facilities: JSON.stringify(['观景窗', '独立卫浴', '空调']), stock: 3 },
-      { name: '家庭套房', description: '适合家庭入住', price: 59800, bedType: '大床+小床', capacity: 4, area: 40, floor: 2, facilities: JSON.stringify(['观景窗', '独立卫浴', '客厅', '空调']), stock: 2 },
-      { name: '标准双人间', description: '经济实惠之选', price: 29800, bedType: '双床', capacity: 2, area: 20, floor: 1, facilities: JSON.stringify(['独立卫浴', '空调']), stock: 5 },
+      { name: '观景大床房', coverImage: 'https://images.pexels.com/photos/30835932/pexels-photo-30835932.jpeg?auto=compress&cs=tinysrgb&w=800', description: '推窗即见梯田', price: 39800, bedType: '大床', capacity: 2, area: 25, floor: 2, facilities: JSON.stringify(['观景窗', '独立卫浴', '空调']), stock: 3 },
+      { name: '家庭套房', coverImage: 'https://images.pexels.com/photos/34645062/pexels-photo-34645062.jpeg?auto=compress&cs=tinysrgb&w=800', description: '适合家庭入住', price: 59800, bedType: '大床+小床', capacity: 4, area: 40, floor: 2, facilities: JSON.stringify(['观景窗', '独立卫浴', '客厅', '空调']), stock: 2 },
+      { name: '标准双人间', coverImage: 'https://images.pexels.com/photos/29702285/pexels-photo-29702285.jpeg?auto=compress&cs=tinysrgb&w=800', description: '经济实惠之选', price: 29800, bedType: '双床', capacity: 2, area: 20, floor: 1, facilities: JSON.stringify(['独立卫浴', '空调']), stock: 5 },
     ]},
     { hotelIdx: 1, rooms: [
-      { name: '鼓楼景观房', description: '可观鼓楼全景', price: 32800, bedType: '大床', capacity: 2, area: 22, floor: 2, facilities: JSON.stringify(['鼓楼景观', '独立卫浴']), stock: 4 },
-      { name: '侗家特色房', description: '体验侗族文化', price: 24800, bedType: '大床', capacity: 2, area: 20, floor: 1, facilities: JSON.stringify(['侗族装饰', '独立卫浴']), stock: 6 },
-      { name: '三人间', description: '朋友出行首选', price: 35800, bedType: '三床', capacity: 3, area: 28, floor: 1, facilities: JSON.stringify(['独立卫浴', '阳台']), stock: 3 },
+      { name: '鼓楼景观房', coverImage: 'https://images.pexels.com/photos/30835932/pexels-photo-30835932.jpeg?auto=compress&cs=tinysrgb&w=800', description: '可观鼓楼全景', price: 32800, bedType: '大床', capacity: 2, area: 22, floor: 2, facilities: JSON.stringify(['鼓楼景观', '独立卫浴']), stock: 4 },
+      { name: '侗家特色房', coverImage: 'https://images.pexels.com/photos/4577673/pexels-photo-4577673.jpeg?auto=compress&cs=tinysrgb&w=800', description: '体验侗族文化', price: 24800, bedType: '大床', capacity: 2, area: 20, floor: 1, facilities: JSON.stringify(['侗族装饰', '独立卫浴']), stock: 6 },
+      { name: '三人间', coverImage: 'https://images.pexels.com/photos/29702285/pexels-photo-29702285.jpeg?auto=compress&cs=tinysrgb&w=800', description: '朋友出行首选', price: 35800, bedType: '三床', capacity: 3, area: 28, floor: 1, facilities: JSON.stringify(['独立卫浴', '阳台']), stock: 3 },
     ]},
     { hotelIdx: 2, rooms: [
-      { name: '日出观景套房', description: '最佳日出观赏点', price: 68800, bedType: '大床', capacity: 2, area: 35, floor: 3, facilities: JSON.stringify(['超大观景台', '望远镜', '独立卫浴', '地暖']), stock: 2 },
-      { name: '云海景观房', description: '云海奇观尽收眼底', price: 49800, bedType: '大床', capacity: 2, area: 28, floor: 2, facilities: JSON.stringify(['观景窗', '咖啡机', '独立卫浴']), stock: 3 },
-      { name: '摄影主题房', description: '专为摄影爱好者设计', price: 42800, bedType: '双床', capacity: 2, area: 25, floor: 2, facilities: JSON.stringify(['摄影器材借用', '观景窗', '独立卫浴']), stock: 2 },
+      { name: '日出观景套房', coverImage: 'https://images.pexels.com/photos/30835932/pexels-photo-30835932.jpeg?auto=compress&cs=tinysrgb&w=800', description: '最佳日出观赏点', price: 68800, bedType: '大床', capacity: 2, area: 35, floor: 3, facilities: JSON.stringify(['超大观景台', '望远镜', '独立卫浴', '地暖']), stock: 2 },
+      { name: '云海景观房', coverImage: 'https://images.pexels.com/photos/30835932/pexels-photo-30835932.jpeg?auto=compress&cs=tinysrgb&w=800', description: '云海奇观尽收眼底', price: 49800, bedType: '大床', capacity: 2, area: 28, floor: 2, facilities: JSON.stringify(['观景窗', '咖啡机', '独立卫浴']), stock: 3 },
+      { name: '摄影主题房', coverImage: 'https://images.pexels.com/photos/776120/pexels-photo-776120.jpeg?auto=compress&cs=tinysrgb&w=800', description: '专为摄影爱好者设计', price: 42800, bedType: '双床', capacity: 2, area: 25, floor: 2, facilities: JSON.stringify(['摄影器材借用', '观景窗', '独立卫浴']), stock: 2 },
     ]},
     { hotelIdx: 3, rooms: [
-      { name: '田园标准间', description: '亲近自然的体验', price: 19800, bedType: '双床', capacity: 2, area: 18, floor: 1, facilities: JSON.stringify(['田园景观', '独立卫浴']), stock: 8 },
-      { name: '亲子家庭房', description: '带孩子体验农耕', price: 28800, bedType: '大床+小床', capacity: 3, area: 30, floor: 1, facilities: JSON.stringify(['儿童床', '玩具', '独立卫浴']), stock: 4 },
-      { name: '阳光大床房', description: '阳光充沛的温馨房间', price: 21800, bedType: '大床', capacity: 2, area: 20, floor: 2, facilities: JSON.stringify(['阳光充足', '独立卫浴', '阳台']), stock: 5 },
+      { name: '田园标准间', coverImage: 'https://images.pexels.com/photos/13872620/pexels-photo-13872620.jpeg?auto=compress&cs=tinysrgb&w=800', description: '亲近自然的体验', price: 19800, bedType: '双床', capacity: 2, area: 18, floor: 1, facilities: JSON.stringify(['田园景观', '独立卫浴']), stock: 8 },
+      { name: '亲子家庭房', coverImage: 'https://images.pexels.com/photos/34645062/pexels-photo-34645062.jpeg?auto=compress&cs=tinysrgb&w=800', description: '带孩子体验农耕', price: 28800, bedType: '大床+小床', capacity: 3, area: 30, floor: 1, facilities: JSON.stringify(['儿童床', '玩具', '独立卫浴']), stock: 4 },
+      { name: '阳光大床房', coverImage: 'https://images.pexels.com/photos/776120/pexels-photo-776120.jpeg?auto=compress&cs=tinysrgb&w=800', description: '阳光充沛的温馨房间', price: 21800, bedType: '大床', capacity: 2, area: 20, floor: 2, facilities: JSON.stringify(['阳光充足', '独立卫浴', '阳台']), stock: 5 },
     ]},
   ];
 

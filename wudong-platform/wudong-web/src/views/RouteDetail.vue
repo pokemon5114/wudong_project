@@ -1,7 +1,7 @@
 <template>
   <div class="route-detail-page">
     <!-- Hero Section -->
-    <div class="detail-hero" :style="{ backgroundImage: `url(${routeInfo.coverImage || 'https://images.pexels.com/photos/2310713/pexels-photo-2310713.jpeg?auto=compress&cs=tinysrgb&w=1920'})` }">
+    <div class="detail-hero" :style="{ backgroundImage: `url(${routeInfo.coverImage || 'https://images.pexels.com/photos/28276474/pexels-photo-28276474.png?auto=compress&cs=tinysrgb&w=800'})` }">
       <div class="hero-overlay"></div>
       <div class="hero-content">
         <div class="route-type">{{ routeInfo.routeType }}</div>
@@ -133,7 +133,7 @@
           <div class="spots-grid">
             <div v-for="(spot, idx) in routeInfo.spots" :key="idx" class="spot-card card">
               <div class="spot-image">
-                <img :src="spot.image || 'https://images.pexels.com/photos/2310713/pexels-photo-2310713.jpeg?auto=compress&cs=tinysrgb&w=400'" :alt="spot" />
+                <img :src="spot.image || 'https://images.pexels.com/photos/28276474/pexels-photo-28276474.png?auto=compress&cs=tinysrgb&w=800'" :alt="spot" />
                 <span class="spot-number">{{ idx + 1 }}</span>
               </div>
               <div class="spot-info">

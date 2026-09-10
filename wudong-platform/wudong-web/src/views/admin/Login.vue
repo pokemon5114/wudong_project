@@ -138,7 +138,7 @@ const handleLogin = async () => {
   inset: 0;
   background: linear-gradient(135deg, #1a365d 0%, #2d1b69 50%, #1a365d 100%);
   background-image:
-    url('https://images.pexels.com/photos/2310713/pexels-photo-2310713.jpeg?auto=compress&cs=tinysrgb&w=1920'),
+    url('https://images.pexels.com/photos/37161573/pexels-photo-37161573.jpeg?auto=compress&cs=tinysrgb&w=800'),
     linear-gradient(135deg, rgba(26, 54, 93, 0.95) 0%, rgba(45, 27, 105, 0.9) 50%, rgba(26, 54, 93, 0.95) 100%);
   background-size: cover;
   background-position: center;

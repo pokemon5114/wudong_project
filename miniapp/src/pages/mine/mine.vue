@@ -37,7 +37,7 @@ import { onShow } from '@dcloudio/uni-app';
 import { useUserStore } from '@/store/user';
 
 const user = useUserStore();
-const defaultAvatar = 'https://picsum.photos/seed/avatar1/120/120';
+const defaultAvatar = 'https://images.pexels.com/photos/7400017/pexels-photo-7400017.jpeg?auto=compress&cs=tinysrgb&w=120&h=120&fit=crop';
 
 const orderTabs = [
   { label: '待支付', status: 'PENDING' },

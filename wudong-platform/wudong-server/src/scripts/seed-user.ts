@@ -32,14 +32,14 @@ async function seed() {
   const hashedPassword = await bcrypt.hash('123456', 10);
 
   const users = [
-    { phone: '13800138000', password: hashedPassword, nickname: '乌东文旅小管家', role: 'admin', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=admin' },
-    { phone: '13800138001', password: hashedPassword, nickname: '小满爱旅行', role: 'visitor', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=user1' },
-    { phone: '13800138002', password: hashedPassword, nickname: '苗族姑娘阿朵', role: 'visitor', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=user2' },
-    { phone: '13900139001', password: hashedPassword, nickname: '银饰匠人老吴', role: 'merchant', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=merchant' },
-    { phone: '13900139002', password: hashedPassword, nickname: '半山民宿老杨', role: 'merchant', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=merchant2' },
-    { phone: '13800138003', password: hashedPassword, nickname: '追光者阿远', role: 'visitor', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=user3' },
-    { phone: '13800138004', password: hashedPassword, nickname: '山野食客', role: 'visitor', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=user4' },
-    { phone: '13800138005', password: hashedPassword, nickname: '背包客小舟', role: 'visitor', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=user5' },
+    { phone: '13800138000', password: hashedPassword, nickname: '乌东文旅小管家', role: 'admin', avatar: 'https://images.pexels.com/photos/7400017/pexels-photo-7400017.jpeg?auto=compress&cs=tinysrgb&w=800' },
+    { phone: '13800138001', password: hashedPassword, nickname: '小满爱旅行', role: 'visitor', avatar: 'https://images.pexels.com/photos/9963637/pexels-photo-9963637.jpeg?auto=compress&cs=tinysrgb&w=800' },
+    { phone: '13800138002', password: hashedPassword, nickname: '苗族姑娘阿朵', role: 'visitor', avatar: 'https://images.pexels.com/photos/6605133/pexels-photo-6605133.jpeg?auto=compress&cs=tinysrgb&w=800' },
+    { phone: '13900139001', password: hashedPassword, nickname: '银饰匠人老吴', role: 'merchant', avatar: 'https://images.pexels.com/photos/11482126/pexels-photo-11482126.jpeg?auto=compress&cs=tinysrgb&w=800' },
+    { phone: '13900139002', password: hashedPassword, nickname: '半山民宿老杨', role: 'merchant', avatar: 'https://images.pexels.com/photos/3290499/pexels-photo-3290499.jpeg?auto=compress&cs=tinysrgb&w=800' },
+    { phone: '13800138003', password: hashedPassword, nickname: '追光者阿远', role: 'visitor', avatar: 'https://images.pexels.com/photos/1191488/pexels-photo-1191488.jpeg?auto=compress&cs=tinysrgb&w=800' },
+    { phone: '13800138004', password: hashedPassword, nickname: '山野食客', role: 'visitor', avatar: 'https://images.pexels.com/photos/907862/pexels-photo-907862.jpeg?auto=compress&cs=tinysrgb&w=800' },
+    { phone: '13800138005', password: hashedPassword, nickname: '背包客小舟', role: 'visitor', avatar: 'https://images.pexels.com/photos/6137038/pexels-photo-6137038.jpeg?auto=compress&cs=tinysrgb&w=800' },
   ];
 
   const userRepo = dataSource.getRepository(AppUserEntity);

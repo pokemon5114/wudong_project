@@ -210,7 +210,7 @@
           <div class="footer-grid">
             <div class="footer-brand">
               <div class="brand-logo">
-                <img src="https://images.pexels.com/photos/2310713/pexels-photo-2310713.jpeg?auto=compress&cs=tinysrgb&w=60&h=60&fit=crop" alt="乌东文旅" />
+                <img src="https://images.pexels.com/photos/36709521/pexels-photo-36709521.jpeg?auto=compress&cs=tinysrgb&w=800" alt="乌东文旅" />
               </div>
               <h3>乌东文旅</h3>
               <p>传承千年苗寨文化<br/>体验独特民族风情</p>

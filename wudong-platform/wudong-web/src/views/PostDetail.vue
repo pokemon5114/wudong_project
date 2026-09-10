@@ -378,7 +378,7 @@ onMounted(() => {
   .hero-pattern {
     position: absolute;
     inset: 0;
-    background-image: url('https://images.pexels.com/photos/2187605/pexels-photo-2187605.jpeg?auto=compress&cs=tinysrgb&w=1920');
+    background-image: url('https://images.pexels.com/photos/15166817/pexels-photo-15166817.png?auto=compress&cs=tinysrgb&w=800');
     background-size: cover;
     background-position: center;
     opacity: 0.3;

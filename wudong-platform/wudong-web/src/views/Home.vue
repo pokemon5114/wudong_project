@@ -34,7 +34,7 @@
       <div class="module-grid">
         <router-link to="/products" class="module-card">
           <div class="module-icon-wrap">
-            <img src="https://images.pexels.com/photos/1105666/pexels-photo-1105666.jpeg?auto=compress&cs=tinysrgb&w=400" alt="非遗商品" class="module-bg-icon" />
+            <img src="https://images.pexels.com/photos/15955334/pexels-photo-15955334.jpeg?auto=compress&cs=tinysrgb&w=400" alt="非遗商品" class="module-bg-icon" />
             <div class="module-icon">👘</div>
           </div>
           <h3>非遗华服</h3>
@@ -43,7 +43,7 @@
         </router-link>
         <router-link to="/restaurants" class="module-card">
           <div class="module-icon-wrap">
-            <img src="https://images.pexels.com/photos/2641886/pexels-photo-2641886.jpeg?auto=compress&cs=tinysrgb&w=400" alt="餐饮美食" class="module-bg-icon" />
+            <img src="https://images.pexels.com/photos/34156954/pexels-photo-34156954.jpeg?auto=compress&cs=tinysrgb&w=400" alt="餐饮美食" class="module-bg-icon" />
             <div class="module-icon">🍲</div>
           </div>
           <h3>苗家风味</h3>
@@ -52,7 +52,7 @@
         </router-link>
         <router-link to="/hotels" class="module-card">
           <div class="module-icon-wrap">
-            <img src="https://images.pexels.com/photos/2747449/pexels-photo-2747449.jpeg?auto=compress&cs=tinysrgb&w=400" alt="住宿预订" class="module-bg-icon" />
+            <img src="https://images.pexels.com/photos/16582298/pexels-photo-16582298.jpeg?auto=compress&cs=tinysrgb&w=400" alt="住宿预订" class="module-bg-icon" />
             <div class="module-icon">🏠</div>
           </div>
           <h3>吊脚楼宿</h3>
@@ -61,7 +61,7 @@
         </router-link>
         <router-link to="/tickets" class="module-card">
           <div class="module-icon-wrap">
-            <img src="https://images.pexels.com/photos/2310713/pexels-photo-2310713.jpeg?auto=compress&cs=tinysrgb&w=400" alt="线路订票" class="module-bg-icon" />
+            <img src="https://images.pexels.com/photos/6129969/pexels-photo-6129969.jpeg?auto=compress&cs=tinysrgb&w=400" alt="线路订票" class="module-bg-icon" />
             <div class="module-icon">🎫</div>
           </div>
           <h3>山水胜境</h3>
@@ -70,7 +70,7 @@
         </router-link>
         <router-link to="/community" class="module-card">
           <div class="module-icon-wrap">
-            <img src="https://images.pexels.com/photos/1190297/pexels-photo-1190297.jpeg?auto=compress&cs=tinysrgb&w=400" alt="社区分享" class="module-bg-icon" />
+            <img src="https://images.pexels.com/photos/31119469/pexels-photo-31119469.jpeg?auto=compress&cs=tinysrgb&w=400" alt="社区分享" class="module-bg-icon" />
             <div class="module-icon">📷</div>
           </div>
           <h3>人文纪行</h3>
@@ -103,8 +103,8 @@
             </div>
           </div>
           <div class="culture-images">
-            <img src="https://images.pexels.com/photos/3601425/pexels-photo-3601425.jpeg?auto=compress&cs=tinysrgb&w=600" alt="苗族文化" class="culture-img-main" />
-            <img src="https://images.pexels.com/photos/2187605/pexels-photo-2187605.jpeg?auto=compress&cs=tinysrgb&w=300" alt="苗族服饰" class="culture-img-sub" />
+            <img src="https://images.pexels.com/photos/16582298/pexels-photo-16582298.jpeg?auto=compress&cs=tinysrgb&w=1920" alt="苗族文化" class="culture-img-main" />
+            <img src="https://images.pexels.com/photos/15955334/pexels-photo-15955334.jpeg?auto=compress&cs=tinysrgb&w=1920" alt="苗族服饰" class="culture-img-sub" />
           </div>
         </div>
       </div>
@@ -330,28 +330,28 @@ import { getFeaturedPosts } from '@/api/community'
 // 高质量Banner图片 - 真实贵州乌东苗族风景人文
 const banners = ref([
   {
-    image: 'https://images.pexels.com/photos/2310713/pexels-photo-2310713.jpeg?auto=compress&cs=tinysrgb&w=1920',
+    image: 'https://images.pexels.com/photos/6129969/pexels-photo-6129969.jpeg?auto=compress&cs=tinysrgb&w=1920',
     tag: '世界遗产',
     title: '乌东梯田',
     subtitle: '层层叠叠的稻田画廊，云海翻涌的人间仙境',
     link: '/tickets'
   },
   {
-    image: 'https://images.pexels.com/photos/3601425/pexels-photo-3601425.jpeg?auto=compress&cs=tinysrgb&w=1920',
+    image: 'https://images.pexels.com/photos/16582298/pexels-photo-16582298.jpeg?auto=compress&cs=tinysrgb&w=1920',
     tag: '特色民宿',
     title: '吊脚楼韵',
     subtitle: '依山而建的苗家木楼，感受千年建筑智慧',
     link: '/hotels'
   },
   {
-    image: 'https://images.pexels.com/photos/2187605/pexels-photo-2187605.jpeg?auto=compress&cs=tinysrgb&w=1920',
+    image: 'https://images.pexels.com/photos/15955334/pexels-photo-15955334.jpeg?auto=compress&cs=tinysrgb&w=1920',
     tag: '非遗传承',
     title: '苗银华彩',
     subtitle: '精美银饰代代相传，匠心独运的民族瑰宝',
     link: '/products'
   },
   {
-    image: 'https://images.pexels.com/photos/1190297/pexels-photo-1190297.jpeg?auto=compress&cs=tinysrgb&w=1920',
+    image: 'https://images.pexels.com/photos/31119469/pexels-photo-31119469.jpeg?auto=compress&cs=tinysrgb&w=1920',
     tag: '人文纪行',
     title: '苗年盛典',
     subtitle: '欢歌笑语庆丰收，热情似火的民族狂欢',

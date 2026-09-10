@@ -167,7 +167,7 @@
               <div class="heritage-content">
                 <div class="heritage-header">
                   <div class="heritage-icon">
-                    <img src="https://images.pexels.com/photos/1105666/pexels-photo-1105666.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop" alt="非遗" />
+                    <img src="https://images.pexels.com/photos/33451390/pexels-photo-33451390.jpeg?auto=compress&cs=tinysrgb&w=800" alt="非遗" />
                   </div>
                   <div class="heritage-info">
                     <h3>非遗文化传承</h3>

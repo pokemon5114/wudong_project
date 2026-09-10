@@ -45,8 +45,8 @@ async function seed() {
       userId: idOf('13800138003'), // 追光者阿远
       content: '乌东梯田的日出真的太美了！清晨五点半登山，看到云海翻涌，太阳从山那边慢慢升起，金色的阳光洒在层层梯田上，简直像仙境一样。下次还要再来！',
       images: JSON.stringify([
-        'https://images.pexels.com/photos/1287145/pexels-photo-1287145.jpeg?auto=compress&cs=tinysrgb&w=800',
-        'https://images.pexels.com/photos/210186/pexels-photo-210186.jpeg?auto=compress&cs=tinysrgb&w=800',
+        'https://images.pexels.com/photos/2161540/pexels-photo-2161540.jpeg?auto=compress&cs=tinysrgb&w=800',
+        'https://images.pexels.com/photos/34902075/pexels-photo-34902075.jpeg?auto=compress&cs=tinysrgb&w=800',
       ]),
       postType: 'photo',
       tags: JSON.stringify(['乌东梯田', '日出', '摄影']),
@@ -57,7 +57,10 @@ async function seed() {
     {
       userId: idOf('13800138002'), // 苗族姑娘阿朵
       content: '今天在苗家体验了蜡染技艺，太有意思了！老师傅手把手教，从绘制图案到染色，每一步都很有讲究。做出了自己专属的蜡染方巾，带回家做纪念！',
-      images: JSON.stringify(['https://images.pexels.com/photos/96380/pexels-photo-96380.jpeg?auto=compress&cs=tinysrgb&w=800']),
+      images: JSON.stringify([
+        'https://images.pexels.com/photos/34161634/pexels-photo-34161634.jpeg?auto=compress&cs=tinysrgb&w=800',
+        'https://images.pexels.com/photos/37853658/pexels-photo-37853658.jpeg?auto=compress&cs=tinysrgb&w=800',
+      ]),
       postType: 'photo',
       tags: JSON.stringify(['蜡染', '非遗体验', '苗族']),
       location: '苗家蜡染体验坊',
@@ -67,7 +70,10 @@ async function seed() {
     {
       userId: idOf('13800138005'), // 背包客小舟
       content: '住在吊脚楼客栈的第一晚，听着窗外的蛙鸣和溪水声入睡，这种感觉太治愈了。远离城市的喧嚣，回归大自然，这就是向往的生活吧。',
-      images: JSON.stringify(['https://images.pexels.com/photos/2310713/pexels-photo-2310713.jpeg?auto=compress&cs=tinysrgb&w=800']),
+      images: JSON.stringify([
+        'https://images.pexels.com/photos/754186/pexels-photo-754186.jpeg?auto=compress&cs=tinysrgb&w=800',
+        'https://images.pexels.com/photos/6550304/pexels-photo-6550304.jpeg?auto=compress&cs=tinysrgb&w=800',
+      ]),
       postType: 'photo',
       tags: JSON.stringify(['吊脚楼', '民宿', '田园生活']),
       location: '乌东吊脚楼客栈',
@@ -77,7 +83,10 @@ async function seed() {
     {
       userId: idOf('13800138004'), // 山野食客
       content: '苗家酸汤鱼，味道绝了！酸辣开胃，鱼肉鲜嫩，配上当地的野菜，一口气吃了两碗饭。强烈推荐大家来尝尝！',
-      images: JSON.stringify(['https://images.pexels.com/photos/958545/pexels-photo-958545.jpeg?auto=compress&cs=tinysrgb&w=800']),
+      images: JSON.stringify([
+        'https://images.pexels.com/photos/33471753/pexels-photo-33471753.jpeg?auto=compress&cs=tinysrgb&w=800',
+        'https://images.pexels.com/photos/36061263/pexels-photo-36061263.jpeg?auto=compress&cs=tinysrgb&w=800',
+      ]),
       postType: 'photo',
       tags: JSON.stringify(['酸汤鱼', '苗族美食', '美食推荐']),
       location: '苗家酸汤鱼庄',
@@ -88,8 +97,8 @@ async function seed() {
       userId: idOf('13800138001'), // 小满爱旅行
       content: '篝火晚会上和当地苗族同胞一起跳舞，太欢乐了！他们都很热情好客，歌声嘹亮，舞姿优美。虽然动作笨拙，但是很开心！',
       images: JSON.stringify([
-        'https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg?auto=compress&cs=tinysrgb&w=800',
-        'https://images.pexels.com/photos/262978/pexels-photo-262978.jpeg?auto=compress&cs=tinysrgb&w=800',
+        'https://images.pexels.com/photos/34408549/pexels-photo-34408549.jpeg?auto=compress&cs=tinysrgb&w=800',
+        'https://images.pexels.com/photos/4276087/pexels-photo-4276087.jpeg?auto=compress&cs=tinysrgb&w=800',
       ]),
       postType: 'photo',
       tags: JSON.stringify(['篝火晚会', '苗族歌舞', '文化体验']),
@@ -100,7 +109,10 @@ async function seed() {
     {
       userId: idOf('13900139001'), // 银饰匠人老吴
       content: '乌东古寨真的太有历史感了！几百年的吊脚楼保存完好，斑驳的木墙诉说着岁月的故事。漫步在青石板路上，仿佛穿越到了过去。',
-      images: JSON.stringify(['https://images.pexels.com/photos/2233729/pexels-photo-2233729.jpeg?auto=compress&cs=tinysrgb&w=800']),
+      images: JSON.stringify([
+        'https://images.pexels.com/photos/5642978/pexels-photo-5642978.jpeg?auto=compress&cs=tinysrgb&w=800',
+        'https://images.pexels.com/photos/7146295/pexels-photo-7146295.jpeg?auto=compress&cs=tinysrgb&w=800',
+      ]),
       postType: 'photo',
       tags: JSON.stringify(['古寨', '吊脚楼', '历史']),
       location: '乌东古寨',

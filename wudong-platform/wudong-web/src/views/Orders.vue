@@ -329,7 +329,7 @@ onMounted(() => {
   position: relative;
   height: 220px;
   background: linear-gradient(135deg, #1a365d 0%, #6b21a8 50%, #1a365d 100%);
-  background-image: url('https://images.pexels.com/photos/2310713/pexels-photo-2310713.jpeg?auto=compress&cs=tinysrgb&w=1920'),
+  background-image: url('https://images.pexels.com/photos/8828439/pexels-photo-8828439.jpeg?auto=compress&cs=tinysrgb&w=800'),
                     linear-gradient(135deg, rgba(26, 54, 93, 0.9) 0%, rgba(107, 33, 168, 0.85) 50%, rgba(26, 54, 93, 0.9) 100%);
   background-size: cover;
   background-position: center;

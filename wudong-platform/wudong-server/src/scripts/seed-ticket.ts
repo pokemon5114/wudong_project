@@ -28,9 +28,10 @@ async function seed() {
     {
       name: '乌东梯田',
       description: '层层叠叠的苗族梯田，四季变换不同美景，被誉为"挂在山间的天梯"，是摄影爱好者的天堂',
-      coverImage: 'https://images.pexels.com/photos/2310713/pexels-photo-2310713.jpeg?auto=compress&cs=tinysrgb&w=800',
+      coverImage: 'https://images.pexels.com/photos/7206100/pexels-photo-7206100.png?auto=compress&cs=tinysrgb&w=800',
       images: JSON.stringify([
-        'https://images.pexels.com/photos/2310713/pexels-photo-2310713.jpeg?auto=compress&cs=tinysrgb&w=800',
+        'https://images.pexels.com/photos/7206100/pexels-photo-7206100.png?auto=compress&cs=tinysrgb&w=800',
+        'https://images.pexels.com/photos/36810327/pexels-photo-36810327.jpeg?auto=compress&cs=tinysrgb&w=800',
       ]),
       address: '乌东村',
       longitude: 108.6835,
@@ -46,10 +47,10 @@ async function seed() {
     {
       name: '苗族博物馆',
       description: '展示苗族历史文化、服饰银饰、农耕文明的专题博物馆，了解苗族文化的窗口',
-      coverImage: 'https://images.pexels.com/photos/2187605/pexels-photo-2187605.jpeg?auto=compress&cs=tinysrgb&w=800',
+      coverImage: 'https://images.pexels.com/photos/30311888/pexels-photo-30311888.jpeg?auto=compress&cs=tinysrgb&w=800',
       images: JSON.stringify([
-        'https://images.pexels.com/photos/2187605/pexels-photo-2187605.jpeg?auto=compress&cs=tinysrgb&w=800',
-        'https://images.pexels.com/photos/372748/pexels-photo-372748.jpeg?auto=compress&cs=tinysrgb&w=800',
+        'https://images.pexels.com/photos/30311888/pexels-photo-30311888.jpeg?auto=compress&cs=tinysrgb&w=800',
+        'https://images.pexels.com/photos/20610602/pexels-photo-20610602.jpeg?auto=compress&cs=tinysrgb&w=800',
       ]),
       address: '乌东村一组',
       longitude: 108.6845,
@@ -65,9 +66,10 @@ async function seed() {
     {
       name: '乌东古寨',
       description: '百年历史的苗族古寨，保存完好的吊脚楼建筑群，是活着的苗族历史博物馆',
-      coverImage: 'https://images.pexels.com/photos/2747449/pexels-photo-2747449.jpeg?auto=compress&cs=tinysrgb&w=800',
+      coverImage: 'https://images.pexels.com/photos/36267610/pexels-photo-36267610.jpeg?auto=compress&cs=tinysrgb&w=800',
       images: JSON.stringify([
-        'https://images.pexels.com/photos/2747449/pexels-photo-2747449.jpeg?auto=compress&cs=tinysrgb&w=800',
+        'https://images.pexels.com/photos/36267610/pexels-photo-36267610.jpeg?auto=compress&cs=tinysrgb&w=800',
+        'https://images.pexels.com/photos/10221253/pexels-photo-10221253.jpeg?auto=compress&cs=tinysrgb&w=800',
       ]),
       address: '乌东村古寨区',
       longitude: 108.6855,
@@ -83,9 +85,10 @@ async function seed() {
     {
       name: '侗族鼓楼',
       description: '侗族标志性建筑，节日集会的重要场所，展现侗族人民的建筑智慧',
-      coverImage: 'https://images.pexels.com/photos/2404843/pexels-photo-2404843.jpeg?auto=compress&cs=tinysrgb&w=800',
+      coverImage: 'https://images.pexels.com/photos/12357815/pexels-photo-12357815.jpeg?auto=compress&cs=tinysrgb&w=800',
       images: JSON.stringify([
-        'https://images.pexels.com/photos/2404843/pexels-photo-2404843.jpeg?auto=compress&cs=tinysrgb&w=800',
+        'https://images.pexels.com/photos/12357815/pexels-photo-12357815.jpeg?auto=compress&cs=tinysrgb&w=800',
+        'https://images.pexels.com/photos/37705849/pexels-photo-37705849.jpeg?auto=compress&cs=tinysrgb&w=800',
       ]),
       address: '乌东村二组',
       longitude: 108.6865,
@@ -101,10 +104,10 @@ async function seed() {
     {
       name: '苗族歌舞表演',
       description: '每晚举行的苗族歌舞表演，体验苗族人民的热情，感受原生态民族艺术魅力',
-      coverImage: 'https://images.pexels.com/photos/2092907/pexels-photo-2092907.jpeg?auto=compress&cs=tinysrgb&w=800',
+      coverImage: 'https://images.pexels.com/photos/13460125/pexels-photo-13460125.jpeg?auto=compress&cs=tinysrgb&w=800',
       images: JSON.stringify([
-        'https://images.pexels.com/photos/2092907/pexels-photo-2092907.jpeg?auto=compress&cs=tinysrgb&w=800',
-        'https://images.pexels.com/photos/1190297/pexels-photo-1190297.jpeg?auto=compress&cs=tinysrgb&w=800',
+        'https://images.pexels.com/photos/13460125/pexels-photo-13460125.jpeg?auto=compress&cs=tinysrgb&w=800',
+        'https://images.pexels.com/photos/3996466/pexels-photo-3996466.jpeg?auto=compress&cs=tinysrgb&w=800',
       ]),
       address: '乌东村民族文化广场',
       longitude: 108.6848,
@@ -134,7 +137,7 @@ async function seed() {
     {
       name: '乌东梯田日出游',
       description: '清晨登山观赏梯田日出，体验云海翻涌的壮观景象，留下最美的旅行记忆',
-      coverImage: 'https://images.pexels.com/photos/2310713/pexels-photo-2310713.jpeg?auto=compress&cs=tinysrgb&w=800',
+      coverImage: 'https://images.pexels.com/photos/14036107/pexels-photo-14036107.jpeg?auto=compress&cs=tinysrgb&w=800',
       routeType: '半日游',
       price: 19800,
       scenicId: savedScenics[0].id,
@@ -158,7 +161,7 @@ async function seed() {
     {
       name: '苗族文化深度体验一日游',
       description: '深入了解苗族文化，参观博物馆，体验蜡染、刺绣等非遗项目',
-      coverImage: 'https://images.pexels.com/photos/3581364/pexels-photo-3581364.jpeg?auto=compress&cs=tinysrgb&w=800',
+      coverImage: 'https://images.pexels.com/photos/8776825/pexels-photo-8776825.jpeg?auto=compress&cs=tinysrgb&w=800',
       routeType: '一日游',
       price: 39800,
       scenicId: savedScenics[1].id,
@@ -183,7 +186,7 @@ async function seed() {
     {
       name: '古寨探秘两日游',
       description: '两天时间深度游览乌东古寨，体验原生态苗寨生活，感受千年民族文化',
-      coverImage: 'https://images.pexels.com/photos/3601425/pexels-photo-3601425.jpeg?auto=compress&cs=tinysrgb&w=800',
+      coverImage: 'https://images.pexels.com/photos/15255679/pexels-photo-15255679.jpeg?auto=compress&cs=tinysrgb&w=800',
       routeType: '两日游',
       price: 79800,
       scenicId: savedScenics[2].id,
@@ -218,7 +221,7 @@ async function seed() {
     {
       name: '侗苗文化双体验周末游',
       description: '周末两日，兼具体验苗族和侗族两种民族文化，收获双倍的文化体验',
-      coverImage: 'https://images.pexels.com/photos/2187605/pexels-photo-2187605.jpeg?auto=compress&cs=tinysrgb&w=800',
+      coverImage: 'https://images.pexels.com/photos/7494233/pexels-photo-7494233.jpeg?auto=compress&cs=tinysrgb&w=800',
       routeType: '两日游',
       price: 69800,
       scenicId: savedScenics[3].id,
