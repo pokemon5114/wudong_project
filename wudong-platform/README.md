@@ -72,14 +72,27 @@ cd wudong-platform
 
 ### 2. 初始化数据库
 
-```bash
-# 启动 MySQL 和 Redis (使用 Docker)
-cd wudong-server
-docker-compose up -d
+MySQL 由 `cool-admin-midway` 下的 compose 提供，映射到宿主机 **3307**
+（避开本机可能已被占用的 3306），后端配置也指向 3307：
 
-# 或使用本地 MySQL，导入 SQL 文件
-mysql -uroot -p < sql/01-schema.sql
+```bash
+cd cool-admin-midway
+docker compose up -d          # 启动 MySQL(3307) 与 Redis(6379)
 ```
+
+再导入数据库快照（表结构 + 演示数据，23 张表）：
+
+```bash
+docker exec -i cool-admin-midway-coolDB-1 \
+  mysql -uroot -p123456 --default-character-set=utf8mb4 \
+  wudong_platform < ../wudong-platform/sql/wudong_platform.sql
+```
+
+> - 该快照表结构由 TypeORM 按实体类自动生成（`synchronize: true`），
+>   改实体后请重新导出，不要手工编辑。
+> - 若只要结构不要数据，可改跑种子脚本
+>   `wudong-server/src/scripts/seed-*.ts`（顺序：user → product →
+>   restaurant → hotel → ticket → community）。
 
 ### 3. 启动后端服务
 
@@ -99,7 +112,7 @@ npm install
 npm run dev
 ```
 
-前端应用将在 http://localhost:5173 启动
+前端应用将在 http://localhost:3000 启动
 
 ### 5. 初始化测试数据
 
