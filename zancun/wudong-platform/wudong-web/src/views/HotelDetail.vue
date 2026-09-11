@@ -1153,4 +1153,22 @@ onMounted(() => {
     grid-template-columns: repeat(2, 1fr);
   }
 }
+/* 与“衣”详情页一致的文旅交易视觉。 */
+.hotel-detail-page { min-height:100vh; background:#f8f5ed; color:#13243d; }.hotel-detail-page .detail-nav { border:0; background:transparent; }.hotel-detail-page .nav-content { padding-top:30px; }.hotel-detail-page .nav-home,.hotel-detail-page .nav-category { color:#183653; font-weight:700; }.hotel-detail-page .nav-current,.hotel-detail-page .nav-sep { color:#7c8793; }
+.hotel-content { margin:8px auto 70px; padding:clamp(34px,5vw,68px) 0; border:0!important; border-radius:0!important; background:transparent!important; box-shadow:none!important; }.hotel-header { gap:clamp(34px,5vw,72px); }.hotel-gallery .main-image-wrap,.hotel-gallery .main-image { border-radius:0!important; }.hotel-gallery .gallery-badges :deep(.el-tag) { border-radius:0; background:#b88722; border:0; }.hotel-basic .hotel-name { font-family:'Noto Serif SC',serif; color:#183653; font-size:clamp(38px,3.8vw,58px); font-weight:500; letter-spacing:-.06em; }.hotel-basic .hotel-desc { color:#687587; line-height:2; }.hotel-basic .hotel-tags :deep(.el-tag) { border-color:#d3a535; color:#a87a19; background:transparent; }.hotel-meta { padding-block:20px; border-block:1px solid rgba(19,36,61,.16); }.hotel-meta .meta-item { color:#566477; }.hotel-meta .el-icon { color:#bf9126; }
+.quick-book { padding:22px 0; border-bottom:1px solid rgba(19,36,61,.16); border-radius:0!important; background:transparent!important; }.quick-book .price { color:#183653!important; font-family:Georgia,'Times New Roman',serif; font-size:clamp(42px,4vw,60px)!important; font-variant-numeric:tabular-nums; }.quick-book :deep(.el-button--primary),.room-action :deep(.el-button--primary) { border-color:#183653; border-radius:999px; background:#183653; }.quick-book :deep(.el-button--primary:hover),.room-action :deep(.el-button--primary:hover) { border-color:#285678; background:#285678; }
+.hotel-section { margin-top:clamp(58px,7vw,96px); }.section-title { padding-bottom:15px; border-bottom:1px solid rgba(19,36,61,.16); font-family:'Noto Serif SC',serif!important; color:#183653!important; font-size:clamp(28px,3vw,40px)!important; font-weight:500!important; letter-spacing:-.05em; }.title-icon,.title-en { color:#bf9126!important; }.room-card,.facility-item,.review-item { border:1px solid rgba(19,36,61,.1)!important; border-radius:0!important; background:transparent!important; box-shadow:none!important; }.room-card:hover { transform:translateY(-5px); box-shadow:0 14px 30px rgba(19,36,61,.12)!important; }.room-image,.room-image :deep(.el-image) { border-radius:0!important; }.room-name { font-family:'Noto Serif SC',serif!important; color:#183653!important; font-weight:500!important; }.room-price .price { color:#183653!important; font-family:Georgia,'Times New Roman',serif; font-variant-numeric:tabular-nums; }.hotel-detail-page :deep(.el-input__wrapper),.hotel-detail-page :deep(.el-textarea__inner) { background:#fffdfa; box-shadow:0 0 0 1px rgba(19,36,61,.16) inset; }
+/* 民宿详情的画廊与价格基线。 */
+.hotel-gallery { display:flex; flex-direction:column; align-items:center; }
+.hotel-gallery .main-image-wrap { width:100%; margin-inline:auto; }
+.hotel-gallery .main-image :deep(img),.hotel-gallery .thumbnail .el-image :deep(img) { object-position:center center; }
+.hotel-gallery .thumbnail-list { width:100%; justify-content:center; }
+.quick-book { display:grid; grid-template-columns:minmax(250px,1fr) auto; align-items:center; min-height:122px; gap:28px; }
+.quick-book .price-info { display:flex; min-width:270px; align-items:baseline; gap:7px; }
+.quick-book .from-label,.quick-book .unit { line-height:1; }
+.quick-book .price { display:inline-block; min-width:150px; line-height:.95; text-align:left; font-variant-numeric:tabular-nums lining-nums; font-feature-settings:'tnum','lnum'; }
+.room-action { align-items:stretch!important; }
+.room-action .room-price { min-height:44px; display:flex; align-items:baseline; justify-content:center; gap:5px; }
+.room-action .room-price .price { display:inline-block; min-width:94px; line-height:.95; text-align:right; font-variant-numeric:tabular-nums lining-nums; font-feature-settings:'tnum','lnum'; }
+.room-action .room-price .unit { line-height:1; }
 </style>

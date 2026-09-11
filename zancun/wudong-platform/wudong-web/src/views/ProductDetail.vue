@@ -1,16 +1,18 @@
 <template>
-  <div class="product-detail-page">
+  <div class="product-detail-page" :class="{ 'heritage-style-preview': isClothingPreview }">
     <!-- 顶部导航 -->
     <div class="detail-nav">
       <div class="nav-content container">
-        <router-link to="/" class="nav-home">
+        <router-link v-if="!isClothingPreview" to="/" class="nav-home">
           <el-icon><HomeFilled /></el-icon>
           首页
         </router-link>
-        <span class="nav-sep">/</span>
-        <router-link to="/products" class="nav-category">非遗商品</router-link>
-        <span class="nav-sep">/</span>
-        <span class="nav-current">{{ product.name || '商品详情' }}</span>
+        <span v-if="!isClothingPreview" class="nav-sep">/</span>
+        <a href="/products" class="nav-category" @click="forceBackToProducts">{{ isClothingPreview ? '← 返回非遗商品' : '非遗商品' }}</a>
+        <template v-if="!isClothingPreview">
+          <span class="nav-sep">/</span>
+          <span class="nav-current">{{ product.name || '商品详情' }}</span>
+        </template>
       </div>
     </div>
 
@@ -260,6 +262,12 @@ const skus = ref([])
 const comments = ref([])
 
 const heritageLabels = ['', '县级非遗', '州级非遗', '省级非遗', '国家级非遗']
+// “衣”章节链接到整个非遗商品模块；所有商品详情统一采用已确认的视觉样式。
+const isClothingPreview = computed(() => true)
+const forceBackToProducts = (event) => {
+  event.preventDefault()
+  window.location.assign(`${window.location.origin}/products`)
+}
 
 const currentImage = computed(() => {
   if (selectedImage.value) return selectedImage.value
@@ -1042,6 +1050,119 @@ onMounted(() => {
       flex-wrap: wrap;
       gap: 16px;
     }
+  }
+}
+
+/* 百鸟衣详情视觉试样：把交易信息收束为游记中的一段选择，而非传统电商色块。 */
+.heritage-style-preview {
+  background:#f8f5ed;
+
+  .detail-nav {
+    position:relative;
+    z-index:2;
+    padding:30px 0 8px;
+    border:0;
+    background:transparent;
+
+    .nav-content { min-height:30px; }
+    .nav-category {
+      display:inline-flex;
+      align-items:center;
+      color:#183653;
+      font-size:14px;
+      font-weight:800;
+      letter-spacing:.03em;
+      transition:color .25s ease,transform .25s ease;
+
+      &:hover { color:#bf9126; transform:translateX(-3px); }
+    }
+  }
+
+  .product-content {
+    margin:8px auto 44px;
+    padding:46px 0 20px;
+    border-radius:0;
+    background:transparent;
+    box-shadow:none;
+  }
+
+  .product-main { gap:clamp(42px,5vw,76px); }
+  .product-gallery .heritage-badge { display:none; }
+
+  .product-info {
+    .product-header .category-tag {
+      padding:0 0 8px;
+      border-radius:0;
+      color:#bf9126;
+      background:transparent;
+      font-size:11px;
+      font-weight:800;
+      letter-spacing:.16em;
+    }
+
+    .product-header .product-name {
+      font-family:'Noto Serif SC',serif;
+      font-size:clamp(36px,3.1vw,52px);
+      font-weight:500;
+      letter-spacing:-.06em;
+    }
+
+    .product-price-section {
+      display:grid;
+      grid-template-columns:1fr auto;
+      gap:9px 26px;
+      align-items:end;
+      margin:30px 0 26px;
+      padding:22px 0 20px;
+      border:0;
+      border-top:1px solid rgba(19,36,61,.16);
+      border-bottom:1px solid rgba(19,36,61,.16);
+      border-radius:0;
+      background:transparent;
+
+      .price-main { grid-column:1; grid-row:1; margin:0; }
+      .price-label { color:#7a8795; font-size:12px; letter-spacing:.12em; }
+      .price-symbol,.price-value { color:#183653; }
+      .price-symbol { font-size:20px; }
+      .price-value { font-family:Georgia,'Times New Roman',serif; font-size:clamp(42px,3.8vw,58px); font-weight:600; font-variant-numeric:tabular-nums lining-nums; font-feature-settings:'tnum','lnum'; letter-spacing:-.04em; }
+      .price-original { grid-column:1; grid-row:2; margin:0; color:#9aa3ae; font-size:12px; }
+      .stock-info { grid-column:2; grid-row:1 / span 2; justify-self:end; padding:8px 0; color:#476c58; font-size:13px; }
+    }
+
+    .product-actions {
+      margin-bottom:28px;
+
+      .quantity-section { gap:20px; margin-bottom:22px; }
+      .quantity-label { color:#687587; font-size:13px; letter-spacing:.1em; }
+      .quantity-input { gap:4px; }
+      .quantity-input :deep(.el-button) {
+        border-color:rgba(19,36,61,.16);
+        color:#183653;
+        background:transparent;
+        transition:background .2s ease,color .2s ease;
+        &:hover { color:#fff; border-color:#183653; background:#183653; }
+      }
+      .quantity-input :deep(.el-input__wrapper) { border:1px solid rgba(19,36,61,.16); border-radius:999px; box-shadow:none; background:transparent; }
+
+      .action-buttons { gap:12px; }
+      .action-buttons .btn-buy,.action-buttons .btn-cart {
+        min-height:58px;
+        border-radius:999px;
+        font-size:16px;
+        font-weight:800;
+        letter-spacing:.04em;
+        box-shadow:none;
+        transition:transform .25s ease,background .25s ease,color .25s ease,box-shadow .25s ease;
+        &:hover { transform:translateY(-3px); box-shadow:0 12px 25px rgba(19,36,61,.16); }
+      }
+      .action-buttons .btn-buy { border:1px solid #183653; background:#183653; color:#fff; }
+      .action-buttons .btn-buy:hover { background:#285678; }
+      .action-buttons .btn-cart { border:1px solid #c99827; background:transparent; color:#9b741e; }
+      .action-buttons .btn-cart:hover { background:#f4e7bf; }
+      .action-buttons :deep(.el-button.is-circle) { width:58px; height:58px; border:1px solid rgba(19,36,61,.18); background:transparent; }
+    }
+
+    .product-service { border-top-color:rgba(19,36,61,.12); }
   }
 }
 </style>

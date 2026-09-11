@@ -958,4 +958,20 @@ onMounted(() => {
     padding-left: 0;
   }
 }
+/* 以“衣”详情页为统一基调：暖米白留白、深靛蓝文字与鎏金强调。 */
+.restaurant-detail-page { background:#f8f5ed; color:#13243d; }
+.detail-hero { height:clamp(280px,29vw,410px); border-bottom:1px solid rgba(19,36,61,.14); }
+.detail-hero .hero-overlay { background:linear-gradient(90deg,rgba(19,36,61,.78),rgba(19,36,61,.32)); }
+.detail-hero .hero-content { max-width:1280px; padding-inline:clamp(32px,7vw,116px); text-align:left; }
+.detail-hero .hero-content h1 { font-family:'Noto Serif SC',serif; font-size:clamp(42px,4.6vw,68px); font-weight:500; letter-spacing:-.065em; text-shadow:none; }
+.detail-hero .hero-meta .avg-price { color:#e2b94e; font-family:Georgia,'Times New Roman',serif; font-variant-numeric:tabular-nums; }
+.breadcrumb { padding:30px 0 12px; } .breadcrumb :deep(.el-breadcrumb__inner) { color:#6d7988; font-weight:600; } .breadcrumb :deep(.el-breadcrumb__item:last-child .el-breadcrumb__inner) { color:#183653; }
+.restaurant-content { max-width:1280px; margin:auto; }
+.restaurant-header.card,.booking-card.card,.dish-card.card,.review-item.card { border:1px solid rgba(19,36,61,.1); border-radius:0; background:transparent; box-shadow:none; }
+.restaurant-header { gap:clamp(34px,5vw,72px); padding:clamp(28px,4vw,58px); border-top:1px solid rgba(19,36,61,.16)!important; }
+.restaurant-header .restaurant-desc { color:#647183; line-height:2; }.restaurant-header .restaurant-tags :deep(.el-tag),.restaurant-header .distance-badge { border-color:#d3a535; color:#a87a19; background:transparent; }
+.restaurant-header .meta-item { color:#536377; }.restaurant-header .meta-item .el-icon { color:#bf9126; }.header-image,.header-image .cover-image { border-radius:0!important; }
+.restaurant-section { margin-top:clamp(56px,7vw,92px); }.section-header { padding-bottom:15px; border-bottom:1px solid rgba(19,36,61,.16); }.section-header h2 { font-family:'Noto Serif SC',serif; color:#183653; font-size:clamp(28px,3vw,40px); font-weight:500; letter-spacing:-.05em; }.section-header h2::after { background:#c99827!important; }.section-header .count { color:#7b8796; }
+.dish-card { transition:transform .25s ease,box-shadow .25s ease; }.dish-card:hover { transform:translateY(-5px); box-shadow:0 14px 30px rgba(19,36,61,.12)!important; }.dish-image,.dish-image img { border-radius:0!important; }.dish-category { border-radius:0!important; color:#fffdf8!important; background:#b88722!important; }.dish-info h4 { font-family:'Noto Serif SC',serif; color:#183653; font-size:20px; font-weight:500; }.dish-desc,.review-content,.restaurant-desc { color:#687587; }.dish-price,.bill-price,.bill-total .total { color:#183653!important; font-family:Georgia,'Times New Roman',serif; font-variant-numeric:tabular-nums; }
+.restaurant-detail-page :deep(.el-button--primary) { border-color:#183653; background:#183653; }.restaurant-detail-page :deep(.el-button--primary:hover) { border-color:#285678; background:#285678; }.restaurant-detail-page :deep(.el-button--success),.restaurant-detail-page :deep(.el-button--warning) { border-color:#c99827; color:#9b741e; background:transparent; }.restaurant-detail-page :deep(.el-input__wrapper),.restaurant-detail-page :deep(.el-textarea__inner) { background:#fffdfa; box-shadow:0 0 0 1px rgba(19,36,61,.16) inset; }.booking-card { padding:clamp(26px,3vw,44px)!important; }.booking-header { color:#183653!important; }.review-item { padding:26px!important; }
 </style>

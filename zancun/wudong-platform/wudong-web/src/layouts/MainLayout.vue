@@ -1,7 +1,7 @@
 <template>
   <div class="main-layout">
     <!-- 顶部导航 - 苗族风格 -->
-    <header class="header">
+    <header class="header header--minimal" :class="{ 'is-home': $route.path === '/' || $route.path === '/home' }">
       <!-- 苗族装饰纹样顶部 -->
       <div class="miao-pattern-top"></div>
 
@@ -99,6 +99,17 @@
         </nav>
 
         <div class="header-actions">
+          <a
+            class="header-guide"
+            :href="guideUrl"
+            target="_blank"
+            rel="noopener"
+            title="在新标签页打开 AI 向导"
+            @click="openGuide"
+          >
+            <el-icon><MagicStick /></el-icon>
+            <span>AI 向导</span>
+          </a>
           <div class="search-box">
             <el-input
               v-model="searchKeyword"
@@ -212,6 +223,20 @@
       </div>
     </header>
 
+    <router-link
+      v-if="journeyTarget"
+      class="journey-bookmark"
+      :to="{ path: '/home', hash: journeyTarget.anchor }"
+      :aria-label="'回到游记的' + journeyTarget.title + '章节'"
+    >
+      <span class="bookmark-spine">游记</span>
+      <span class="bookmark-copy">
+        <small>RETURN TO THE JOURNEY</small>
+        <b>回到第 {{ journeyTarget.number }} 章 · {{ journeyTarget.title }}</b>
+        <em>↗</em>
+      </span>
+    </router-link>
+
     <!-- 主内容区 -->
     <main class="main-content">
       <router-view />
@@ -298,8 +323,8 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue'
-import { useRouter } from 'vue-router'
+import { computed, ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import {
   Search, Bell, User, List, ShoppingCart, Setting, SwitchButton,
   ChatDotRound, Message, Share, Phone, Location, MagicStick
@@ -309,8 +334,21 @@ import { getMessageList, getUnreadCount, readMessage, readAllMessages } from '@/
 import { ElMessage } from 'element-plus'
 
 const router = useRouter()
+const route = useRoute()
 const userStore = useUserStore()
 const searchKeyword = ref('')
+
+// 业务页通过书签回到首页中与其语义对应的游记章节。
+// 使用 hash 是为了复用路由现有的平滑锚点滚动，不改变任何业务页参数。
+const journeyTarget = computed(() => {
+  const path = route.path
+  if (path.startsWith('/products')) return { anchor: '#chapter-clothes', number: '01', title: '衣' }
+  if (path.startsWith('/restaurants')) return { anchor: '#chapter-food', number: '02', title: '食' }
+  if (path.startsWith('/hotels')) return { anchor: '#chapter-stay', number: '03', title: '住' }
+  if (path.startsWith('/tickets') || path.startsWith('/routes') || path.startsWith('/scenics')) return { anchor: '#chapter-travel', number: '04', title: '行' }
+  if (path.startsWith('/community')) return { anchor: '#page-community', number: '05', title: '纪' }
+  return null
+})
 
 // AI 向导是独立部署的 DSH 页面（见 wudong-guide/），不在本站的路由里，
 // 所以用普通 <a> 新标签页打开，而不是 router-link。
@@ -720,6 +758,271 @@ const handleLogout = () => {
   }
 }
 
+// 极简工具导航：首页嵌入内容上方，仅保留 AI 与账户入口。
+.header.header--minimal {
+  min-height: 68px;
+  position: absolute;
+  right: 0;
+  left: 0;
+  background: transparent;
+  box-shadow: none;
+
+  .miao-pattern-top,
+  .miao-pattern-bottom,
+  .logo,
+  .nav {
+    display: none;
+  }
+
+  .header-content {
+    height: 68px;
+    justify-content: flex-end;
+  }
+
+  .header-actions {
+    gap: 10px;
+
+    .search-box {
+      display: none;
+    }
+  }
+
+  &.is-home {
+    .header-actions {
+      position: absolute;
+      top: clamp(28px, 3.2vw, 54px);
+      right: clamp(32px, 4vw, 72px);
+      align-items: baseline;
+      gap: clamp(18px, 1.8vw, 30px);
+      padding: 0;
+      border: 0;
+      background: transparent;
+      box-shadow: none;
+      backdrop-filter: none;
+    }
+  }
+}
+
+.header-guide {
+  display: inline-flex;
+  height: 38px;
+  align-items: center;
+  gap: 7px;
+  padding: 0 14px;
+  border: 1px solid rgba(19, 54, 85, 0.16);
+  border-radius: 999px;
+  color: #183653;
+  background: rgba(255, 255, 255, 0.76);
+  font-size: 13px;
+  font-weight: 700;
+  transition: transform 0.2s ease, background 0.2s ease;
+
+  &:hover {
+    color: #183653;
+    background: #f4e7bf;
+    transform: translateY(-2px);
+  }
+}
+
+// 所有业务页沿用首页的极简入口语言；登录后的通知与个人菜单维持原有功能样式。
+.header.header--minimal {
+  .header-actions {
+    align-items: baseline;
+    gap: clamp(18px, 1.8vw, 30px);
+  }
+
+  .header-guide,
+  .login-btn {
+    position: relative;
+    display: inline-flex;
+    width: auto;
+    min-height: 0;
+    height: auto;
+    align-items: center;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    color: #183653 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    font-size: clamp(14px, 1.05vw, 18px);
+    font-weight: 520;
+    letter-spacing: -0.02em;
+    line-height: 1.35;
+    transition: color .24s ease, font-weight .24s ease, transform .24s ease;
+
+    .el-icon {
+      display: none;
+    }
+
+    &::after {
+      position: absolute;
+      right: 0;
+      bottom: -7px;
+      left: 0;
+      height: 2px;
+      background: #c99827;
+      content: '';
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform .24s ease;
+    }
+
+    &:hover,
+    &:focus-visible {
+      color: #13243d !important;
+      font-weight: 800;
+      transform: translateY(-2px);
+
+      &::after {
+        transform: scaleX(1);
+      }
+    }
+  }
+}
+
+// 首页的两个入口作为开屏文字的一部分：只留文字和微妙的交互反馈。
+.header.header--minimal.is-home {
+  .header-guide,
+  .login-btn {
+    position: relative;
+    display: inline-flex;
+    width: auto;
+    min-height: 0;
+    height: auto;
+    align-items: center;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    color: #183653 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    font-size: clamp(14px, 1.05vw, 18px);
+    font-weight: 520;
+    letter-spacing: -0.02em;
+    line-height: 1.35;
+    transition: color .24s ease, font-weight .24s ease, transform .24s ease;
+
+    .el-icon {
+      display: none;
+    }
+
+    &::after {
+      position: absolute;
+      right: 0;
+      bottom: -7px;
+      left: 0;
+      height: 2px;
+      background: #c99827;
+      content: '';
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform .24s ease;
+    }
+
+    &:hover,
+    &:focus-visible {
+      color: #13243d !important;
+      font-weight: 800;
+      transform: translateY(-2px);
+
+      &::after {
+        transform: scaleX(1);
+      }
+    }
+  }
+}
+
+.journey-bookmark {
+  position: fixed;
+  top: 38vh;
+  left: 0;
+  z-index: 30;
+  display: flex;
+  width: 38px;
+  min-height: 132px;
+  align-items: stretch;
+  overflow: hidden;
+  border: 1px solid rgba(19, 54, 83, 0.14);
+  border-left: 0;
+  border-radius: 0 18px 18px 0;
+  background: #183653;
+  box-shadow: 8px 12px 30px rgba(19, 36, 61, 0.12);
+  color: #fff;
+  transition: width 0.35s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.25s ease;
+
+  &::after {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 14px;
+    height: 14px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.34);
+    border-left: 1px solid rgba(255, 255, 255, 0.34);
+    background: #f1ce75;
+    clip-path: polygon(100% 0, 0 0, 100% 100%);
+    content: '';
+  }
+
+  &:hover,
+  &:focus-visible {
+    width: 214px;
+    color: #fff;
+    box-shadow: 12px 16px 38px rgba(19, 36, 61, 0.2);
+  }
+}
+
+.bookmark-spine {
+  display: flex;
+  width: 38px;
+  min-width: 38px;
+  align-items: center;
+  justify-content: center;
+  color: #f1ce75;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  writing-mode: vertical-rl;
+}
+
+.bookmark-copy {
+  display: flex;
+  width: 176px;
+  min-width: 176px;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;
+  padding: 19px 24px 18px 8px;
+  opacity: 0;
+  transform: translateX(-12px);
+  transition: opacity 0.2s ease 0.08s, transform 0.3s ease 0.05s;
+
+  small {
+    color: rgba(241, 206, 117, 0.86);
+    font-size: 8px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+  }
+
+  b {
+    font-size: 14px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  em {
+    color: #f1ce75;
+    font-size: 17px;
+    font-style: normal;
+  }
+}
+
+.journey-bookmark:hover .bookmark-copy,
+.journey-bookmark:focus-visible .bookmark-copy {
+  opacity: 1;
+  transform: translateX(0);
+}
+
 // 苗族装饰条（兼容旧代码）
 .miao-decoration {
   height: 4px;
@@ -1019,6 +1322,39 @@ const handleLogout = () => {
       }
     }
   }
+}
+
+@media (max-width: 767px) {
+  .journey-bookmark {
+    display: none;
+  }
+}
+
+// 极简业务页右上角：通知与头像统一到同一条水平基线。
+.header.header--minimal .header-actions {
+  align-items: center;
+}
+
+.header.header--minimal.is-home .header-actions {
+  align-items: center;
+}
+
+.header.header--minimal .header-badge,
+.header.header--minimal .user-dropdown,
+.header.header--minimal .user-info {
+  display: inline-flex;
+  align-items: center;
+  line-height: 1;
+}
+
+.header.header--minimal .miao-btn {
+  display: inline-flex;
+  width: 36px;
+  height: 36px;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  margin: 0;
 }
 </style>
 
