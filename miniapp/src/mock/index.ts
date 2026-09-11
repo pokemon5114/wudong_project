@@ -54,7 +54,7 @@ on('POST', '/api/auth/login', ({ data }) => {
       id: 1,
       username: data?.phone || '13800000001',
       nickname: '游客小明',
-      avatar: 'https://picsum.photos/seed/avatar1/100/100',
+      avatar: 'https://images.pexels.com/photos/7400017/pexels-photo-7400017.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop',
       gender: 1,
     },
   };
@@ -69,7 +69,7 @@ on('GET', '/api/auth/profile', () => ({
   id: 1,
   username: '13800000001',
   nickname: '游客小明',
-  avatar: 'https://picsum.photos/seed/avatar1/100/100',
+  avatar: 'https://images.pexels.com/photos/7400017/pexels-photo-7400017.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop',
   gender: 1,
   region: '贵州黔东南',
   bio: '爱旅行的苗寨访客',
@@ -243,8 +243,8 @@ on('POST', '/api/food/reserve', ({ data }) => {
 
 on('GET', '/api/food/product/list', ({ data }) => ({
   list: [
-    { id: 1, name: '雷山银球茶', price: 128, spec: '250g', stock: 50, origin: '贵州雷山', mainImage: 'https://picsum.photos/seed/tea/400/400' },
-    { id: 2, name: '苗家腊肉', price: 88, spec: '500g', stock: 30, origin: '贵州雷山', mainImage: 'https://picsum.photos/seed/meat/400/400' },
+    { id: 1, name: '雷山银球茶', price: 128, spec: '250g', stock: 50, origin: '贵州雷山', mainImage: 'https://images.pexels.com/photos/35643789/pexels-photo-35643789.png?auto=compress&cs=tinysrgb&w=400&h=400&fit=crop' },
+    { id: 2, name: '苗家腊肉', price: 88, spec: '500g', stock: 30, origin: '贵州雷山', mainImage: 'https://images.pexels.com/photos/19688911/pexels-photo-19688911.jpeg?auto=compress&cs=tinysrgb&w=400&h=400&fit=crop' },
   ],
   total: 2,
   page: Number(data?.page || 1),
@@ -259,7 +259,7 @@ on('GET', '/api/food/product/detail/:id', ({ params }) => ({
   stock: 50,
   origin: '贵州雷山',
   shelfLife: '18 个月',
-  mainImage: 'https://picsum.photos/seed/tea/750/750',
+  mainImage: 'https://images.pexels.com/photos/35643789/pexels-photo-35643789.png?auto=compress&cs=tinysrgb&w=750&h=750&fit=crop',
 }));
 
 // ---------- 住 7.6 ----------
@@ -313,7 +313,7 @@ on('GET', '/api/travel/route/detail/:id', ({ params }) =>
 
 on('GET', '/api/travel/eticket/:orderId', ({ params }) => ({
   orderId: Number(params.orderId),
-  qrCode: 'https://picsum.photos/seed/qr/300/300',
+  qrCode: 'https://images.pexels.com/photos/5642978/pexels-photo-5642978.jpeg?auto=compress&cs=tinysrgb&w=300&h=300&fit=crop',
   validDate: '2026-09-20',
   status: 'UNUSED',
 }));
@@ -339,10 +339,10 @@ on('POST', '/api/community/report', () => null);
 
 // ---------- 上传 / 消息 7.3.5 ----------
 on('POST', '/api/upload/image', () => ({
-  url: 'https://picsum.photos/seed/upload/750/750',
+  url: 'https://images.pexels.com/photos/17881567/pexels-photo-17881567.jpeg?auto=compress&cs=tinysrgb&w=750&h=750&fit=crop',
 }));
 on('POST', '/api/upload/video', () => ({
-  url: 'https://picsum.photos/seed/uploadv/750/750',
+  url: 'https://images.pexels.com/photos/34408549/pexels-photo-34408549.jpeg?auto=compress&cs=tinysrgb&w=750&h=750&fit=crop',
 }));
 
 on('GET', '/api/message/list', ({ data }) => ({

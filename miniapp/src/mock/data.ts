@@ -12,8 +12,42 @@ import type {
   Scenic,
 } from '@/api/types';
 
-const img = (seed: string, w = 400, h = 400) =>
-  `https://picsum.photos/seed/${seed}/${w}/${h}`;
+// 图片与后端种子同源（Pexels），按内容主题选取，避免 picsum 随机图与内容不符。
+// 保留原 img(seed, w, h) 签名，调用处不用改。
+const IMG: Record<string, string> = {
+  wudong1: 'https://images.pexels.com/photos/6129969/pexels-photo-6129969.jpeg',
+  wudong2: 'https://images.pexels.com/photos/16582298/pexels-photo-16582298.jpeg',
+  wudong3: 'https://images.pexels.com/photos/31119469/pexels-photo-31119469.jpeg',
+  silver: 'https://images.pexels.com/photos/14802898/pexels-photo-14802898.jpeg',
+  batik: 'https://images.pexels.com/photos/34583535/pexels-photo-34583535.jpeg',
+  embroidery: 'https://images.pexels.com/photos/17881567/pexels-photo-17881567.jpeg',
+  restaurant1: 'https://images.pexels.com/photos/33965578/pexels-photo-33965578.png',
+  restaurant2: 'https://images.pexels.com/photos/18414268/pexels-photo-18414268.jpeg',
+  hotel1: 'https://images.pexels.com/photos/36647675/pexels-photo-36647675.jpeg',
+  hotel2: 'https://images.pexels.com/photos/17801941/pexels-photo-17801941.jpeg',
+  scenic1: 'https://images.pexels.com/photos/7206100/pexels-photo-7206100.png',
+  route1: 'https://images.pexels.com/photos/14036107/pexels-photo-14036107.jpeg',
+  route2: 'https://images.pexels.com/photos/8776825/pexels-photo-8776825.jpeg',
+  post1: 'https://images.pexels.com/photos/2161540/pexels-photo-2161540.jpeg',
+  post2: 'https://images.pexels.com/photos/34161634/pexels-photo-34161634.jpeg',
+  post3: 'https://images.pexels.com/photos/34408549/pexels-photo-34408549.jpeg',
+  avatar1: 'https://images.pexels.com/photos/7400017/pexels-photo-7400017.jpeg',
+  avatar2: 'https://images.pexels.com/photos/9963637/pexels-photo-9963637.jpeg',
+  tea: 'https://images.pexels.com/photos/35643789/pexels-photo-35643789.png',
+  qr: 'https://images.pexels.com/photos/5642978/pexels-photo-5642978.jpeg',
+  upload: 'https://images.pexels.com/photos/17881567/pexels-photo-17881567.jpeg',
+  uploadv: 'https://images.pexels.com/photos/34408549/pexels-photo-34408549.jpeg',
+};
+// 商品图集用 `g{id}-{n}` 动态拼种子，按 id 轮换三张主题图兜底
+const GALLERY = [
+  'https://images.pexels.com/photos/14802898/pexels-photo-14802898.jpeg',
+  'https://images.pexels.com/photos/34583535/pexels-photo-34583535.jpeg',
+  'https://images.pexels.com/photos/17881567/pexels-photo-17881567.jpeg',
+];
+const img = (seed: string, w = 400, h = 400) => {
+  const base = IMG[seed] || (seed.startsWith('g') ? GALLERY[Number(seed.replace(/\D/g, '')) % GALLERY.length] : GALLERY[0]);
+  return `${base}?auto=compress&cs=tinysrgb&w=${Math.max(w, 400)}&h=${h}&fit=crop`;
+};
 
 export const banners: Banner[] = [
   { id: 1, title: '乌东苗寨', imageUrl: img('wudong1', 750, 360) },
