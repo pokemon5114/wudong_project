@@ -3,7 +3,7 @@ import { Middleware, IMiddleware } from '@midwayjs/core';
 import { Context, NextFunction } from '@midwayjs/koa';
 import * as jwt from 'jsonwebtoken';
 
-const SECRET_KEY = 'wudong-platform-keys-2026-guizhou';
+const SECRET_KEY = process.env.JWT_SECRET || 'wudong-platform-secret-2026';
 
 @Middleware()
 export class JwtPassportMiddleware implements IMiddleware<Context, NextFunction> {

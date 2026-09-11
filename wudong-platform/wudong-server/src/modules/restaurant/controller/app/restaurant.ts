@@ -1,10 +1,29 @@
 import { Controller, Get, Post, Inject, Query, Body } from '@midwayjs/core';
+import { Context } from '@midwayjs/koa';
 import { AppRestaurantService } from '../../service/restaurant';
+import { AppAdminService } from '../../../admin/service/admin';
 
 @Controller('/app/restaurant')
 export class AppRestaurantController {
   @Inject()
   restaurantService: AppRestaurantService;
+
+  @Inject()
+  adminService: AppAdminService;
+
+  @Inject()
+  ctx: Context;
+
+  private requireAdmin() {
+    const auth = this.ctx.get('authorization') || '';
+    const token = auth.replace(/^Bearer\s+/i, '').trim();
+    const payload = token ? this.adminService.verifyToken(token) : null;
+    if (!payload?.adminId || payload.type !== 'admin') {
+      this.ctx.status = 401;
+      return { code: 40101, message: '未登录或token已过期' };
+    }
+    return null;
+  }
 
   // ===== 餐厅 =====
   @Get('/list')
@@ -29,6 +48,8 @@ export class AppRestaurantController {
 
   @Post('')
   async createRestaurant(@Body() body: any) {
+    const denied = this.requireAdmin();
+    if (denied) return denied;
     return this.restaurantService.createRestaurant(body);
   }
 
@@ -48,6 +69,8 @@ export class AppRestaurantController {
 
   @Post('/dish')
   async createDish(@Body() body: any) {
+    const denied = this.requireAdmin();
+    if (denied) return denied;
     return this.restaurantService.createDish(body);
   }
 
@@ -59,6 +82,8 @@ export class AppRestaurantController {
 
   @Post('/table')
   async createTable(@Body() body: any) {
+    const denied = this.requireAdmin();
+    if (denied) return denied;
     return this.restaurantService.createTable(body);
   }
 

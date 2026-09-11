@@ -15,7 +15,7 @@
     </div>
 
     <div class="container">
-      <div class="product-content" v-loading="loading">
+      <div v-if="!notFound" class="product-content" v-loading="loading">
         <div class="product-main">
           <!-- 左侧图片展示 -->
           <div class="product-gallery">
@@ -32,7 +32,7 @@
                 :key="idx"
                 class="thumbnail"
                 :class="{ active: currentImage === img }"
-                @click="currentImage = img"
+                @click="selectImage(img)"
               >
                 <el-image :src="img" fit="cover" />
               </div>
@@ -167,7 +167,7 @@
               <div class="heritage-content">
                 <div class="heritage-header">
                   <div class="heritage-icon">
-                    <img src="https://images.pexels.com/photos/1105666/pexels-photo-1105666.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop" alt="非遗" />
+                    <img src="https://images.pexels.com/photos/33451390/pexels-photo-33451390.jpeg?auto=compress&cs=tinysrgb&w=800" alt="非遗" />
                   </div>
                   <div class="heritage-info">
                     <h3>非遗文化传承</h3>
@@ -217,6 +217,12 @@
           </el-tabs>
         </div>
       </div>
+
+      <div v-else class="product-not-found">
+        <el-empty description="商品不存在或已下架">
+          <el-button type="primary" @click="router.push('/products')">返回商品列表</el-button>
+        </el-empty>
+      </div>
     </div>
   </div>
 </template>
@@ -240,6 +246,7 @@ const router = useRouter()
 const userStore = useUserStore()
 
 const loading = ref(false)
+const notFound = ref(false)
 const addingCart = ref(false)
 const buying = ref(false)
 const collected = ref(false)
@@ -247,12 +254,14 @@ const product = ref({})
 const quantity = ref(1)
 const activeTab = ref('detail')
 const selectedSku = ref(null)
+const selectedImage = ref('')
 const skus = ref([])
 const comments = ref([])
 
 const heritageLabels = ['', '县级非遗', '州级非遗', '省级非遗', '国家级非遗']
 
 const currentImage = computed(() => {
+  if (selectedImage.value) return selectedImage.value
   if (product.value.images && product.value.images.length > 0) {
     return product.value.images[0]
   }
@@ -268,18 +277,27 @@ const previewImages = computed(() => {
 
 const loadProduct = async () => {
   loading.value = true
+  notFound.value = false
+  selectedImage.value = ''
   try {
     const res = await getProductDetail(route.params.id)
-    if (res.code === 0) {
+    if (res.code === 0 && res.data?.id) {
       product.value = res.data
       skus.value = res.data.skus || []
       comments.value = res.data.comments || []
+    } else {
+      notFound.value = true
     }
   } catch (error) {
     console.error('Failed to load product:', error)
+    notFound.value = true
   } finally {
     loading.value = false
   }
+}
+
+const selectImage = (image) => {
+  selectedImage.value = image
 }
 
 const selectSku = (sku) => {
@@ -434,6 +452,14 @@ onMounted(() => {
   background: white;
   border-radius: var(--radius-xl);
   padding: 40px;
+  margin: 30px auto;
+  box-shadow: var(--shadow-md);
+}
+
+.product-not-found {
+  background: white;
+  border-radius: var(--radius-xl);
+  padding: 80px 40px;
   margin: 30px auto;
   box-shadow: var(--shadow-md);
 }

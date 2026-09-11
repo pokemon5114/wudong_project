@@ -7,6 +7,7 @@ import { AppProductEntity } from '../../product/entity/product';
 import { AppRoomEntity } from '../../hotel/entity/hotel';
 import { AppTableEntity, AppDishEntity } from '../../restaurant/entity/restaurant';
 import { MessageService } from '../../message/service/message';
+import { RedisCacheService } from '../../cache/service/redis';
 
 /**
  * 订单状态。实体用整型存储，这里给出与文档 §4.7.1 语义对应的命名，
@@ -47,6 +48,9 @@ export class AppTicketService {
 
   @Inject()
   messageService: MessageService;
+
+  @Inject()
+  redisCache: RedisCacheService;
 
   // ===== 景区管理 =====
 
@@ -447,6 +451,9 @@ export class AppTicketService {
         const saved = await manager.save(order);
         return { code: 0, data: saved };
       }).then(async (result: any) => {
+        if (result.code === 0 && data.orderType === 'product') {
+          await this.redisCache.deleteByPrefix('product:');
+        }
         // 站内信放在 service 里，/app/* 与 /api/* 两条入口都会触发（不再各自写一遍）
         if (result.code === 0) {
           await this.messageService.notify(
@@ -535,6 +542,10 @@ export class AppTicketService {
       await this.restock(manager, order.orderType, order.relatedId, order.quantity);
     });
 
+    if (order.orderType === 'product') {
+      await this.redisCache.deleteByPrefix('product:');
+    }
+
     return { code: 0, message: '订单已取消' };
   }
 
@@ -593,6 +604,10 @@ export class AppTicketService {
       await manager.update(AppOrderEntity, id, { orderStatus: OrderStatus.REFUNDED });
       await this.restock(manager, order.orderType, order.relatedId, order.quantity);
     });
+
+    if (order.orderType === 'product') {
+      await this.redisCache.deleteByPrefix('product:');
+    }
 
     return { code: 0, message: '退款成功' };
   }

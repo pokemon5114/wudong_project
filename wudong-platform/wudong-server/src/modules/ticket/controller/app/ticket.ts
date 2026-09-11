@@ -2,6 +2,7 @@ import { Controller, Get, Post, Inject, Query, Body } from '@midwayjs/core';
 import { Context } from '@midwayjs/koa';
 import { AppTicketService } from '../../service/ticket';
 import { AppUserService } from '../../../user/service/user';
+import { AppAdminService } from '../../../admin/service/admin';
 
 @Controller('/app/ticket')
 export class AppTicketController {
@@ -12,7 +13,21 @@ export class AppTicketController {
   userService: AppUserService;
 
   @Inject()
+  adminService: AppAdminService;
+
+  @Inject()
   ctx: Context;
+
+  private requireAdmin() {
+    const auth = this.ctx.get('authorization') || '';
+    const token = auth.replace(/^Bearer\s+/i, '').trim();
+    const payload = token ? this.adminService.verifyToken(token) : null;
+    if (!payload?.adminId || payload.type !== 'admin') {
+      this.ctx.status = 401;
+      return { code: 40101, message: '未登录或token已过期' };
+    }
+    return null;
+  }
 
   /**
    * 从 token 解析登录用户。
@@ -46,6 +61,8 @@ export class AppTicketController {
 
   @Post('/scenic')
   async createScenic(@Body() body: any) {
+    const denied = this.requireAdmin();
+    if (denied) return denied;
     return this.ticketService.createScenic(body);
   }
 
@@ -74,6 +91,8 @@ export class AppTicketController {
 
   @Post('/route')
   async createRoute(@Body() body: any) {
+    const denied = this.requireAdmin();
+    if (denied) return denied;
     return this.ticketService.createRoute(body);
   }
 

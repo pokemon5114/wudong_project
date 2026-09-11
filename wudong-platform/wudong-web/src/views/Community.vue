@@ -13,23 +13,36 @@
       <!-- 发布入口 -->
       <div class="publish-section" v-if="userStore.isLoggedIn">
         <div class="publish-card">
-          <div class="user-avatar">
-            <el-avatar :size="48">{{ userStore.user?.nickname?.slice(0, 1) || '游' }}</el-avatar>
+          <div class="publish-card-header">
+            <div class="publish-avatar">
+              <el-avatar :size="48" :src="userStore.user?.avatar">{{ userStore.user?.nickname?.slice(0, 1) || '游' }}</el-avatar>
+              <span class="avatar-status" aria-hidden="true"></span>
+            </div>
+            <div class="publish-heading">
+              <strong>分享此刻</strong>
+              <span>把乌东的风景与故事，留给更多旅人</span>
+            </div>
           </div>
           <div class="publish-input">
             <el-input
+              class="publish-textarea"
               type="textarea"
               v-model="newPostContent"
               placeholder="分享你的乌东故事，感受苗寨风情..."
               :rows="2"
+              aria-label="分享你的乌东故事"
               readonly
               @click="showPublishDialog = true"
             />
+            <div class="publish-meta">
+              <span><el-icon><Edit /></el-icon>点击输入，记录旅途中的好心情</span>
+              <span class="publish-meta-note">文字 · 位置 · 标签</span>
+            </div>
             <div class="publish-actions">
               <div class="action-tags">
-                <el-tag v-for="tag in quickTags" :key="tag" size="small" effect="plain" @click="addTag(tag)">{{ tag }}</el-tag>
+                <el-tag v-for="tag in quickTags" :key="tag" size="small" effect="plain" @click.stop="addTag(tag)">{{ tag }}</el-tag>
               </div>
-              <el-button type="primary" @click="showPublishDialog = true">
+              <el-button type="primary" round @click="showPublishDialog = true">
                 <el-icon><Edit /></el-icon>
                 发布帖子
               </el-button>
@@ -66,7 +79,7 @@
           >
             <div class="post-header">
               <div class="user-info">
-                <el-avatar :size="44" class="user-avatar">{{ post.user?.nickname?.slice(0, 1) || '游' }}</el-avatar>
+              <el-avatar :size="44" :src="post.user?.avatar" class="user-avatar">{{ post.user?.nickname?.slice(0, 1) || '游' }}</el-avatar>
                 <div class="user-detail">
                   <span class="username">{{ post.user?.nickname || '匿名游客' }}</span>
                   <span class="time">{{ formatTime(post.createTime) }}</span>
@@ -88,6 +101,8 @@
                 :key="idx"
                 :src="img"
                 :preview-src-list="post.images"
+                :initial-index="idx"
+                preview-teleported
                 fit="cover"
                 class="post-image"
                 :class="{ 'single': post.images.length === 1, 'multiple': post.images.length > 1 }"
@@ -108,9 +123,9 @@
             </div>
 
             <div class="post-stats">
-              <span class="stat-item" @click.stop="handleLike(post)">
+              <span class="stat-item" title="点赞" @click.stop="handleLike(post)">
                 <el-icon :class="{ 'is-liked': post.isLiked }"><Star /></el-icon>
-                {{ post.likeCount }}
+                点赞 {{ post.likeCount }}
               </span>
               <span class="stat-item">
                 <el-icon><ChatDotRound /></el-icon>
@@ -119,6 +134,15 @@
               <span class="stat-item">
                 <el-icon><View /></el-icon>
                 {{ post.viewCount }}
+              </span>
+              <span
+                class="stat-item favorite-stat"
+                :class="{ 'is-favorited': favoritePostIds.has(String(post.id)) }"
+                title="收藏"
+                @click.stop="handleFavorite(post)"
+              >
+                <el-icon><Collection /></el-icon>
+                收藏
               </span>
             </div>
           </div>
@@ -143,19 +167,37 @@
       title="发布帖子"
       width="680px"
       class="publish-dialog"
+      :show-close="false"
+      :close-on-click-modal="false"
     >
       <div class="dialog-user-info">
-        <el-avatar :size="48">{{ userStore.user?.nickname?.slice(0, 1) || '游' }}</el-avatar>
+        <el-avatar :size="48" :src="userStore.user?.avatar">{{ userStore.user?.nickname?.slice(0, 1) || '游' }}</el-avatar>
         <span>{{ userStore.user?.nickname || '匿名游客' }}</span>
       </div>
-      <el-form :model="publishForm" label-width="80px">
+      <el-form :model="publishForm" label-position="top" class="publish-form">
         <el-form-item label="分享内容">
           <el-input
             type="textarea"
             v-model="publishForm.content"
-            :rows="6"
+            :rows="5"
             placeholder="分享你的乌东故事，记录美好瞬间..."
           />
+        </el-form-item>
+        <el-form-item label="添加图片">
+          <el-upload
+            v-model:file-list="imageFileList"
+            class="post-image-upload"
+            list-type="picture-card"
+            accept="image/*"
+            :limit="9"
+            :before-upload="beforeImageUpload"
+            :http-request="handleImageUpload"
+            :on-remove="handleImageRemove"
+            :on-preview="handleImagePreview"
+          >
+            <el-icon><Plus /></el-icon>
+          </el-upload>
+          <span class="upload-tip">最多上传 9 张图片，单张不超过 10MB</span>
         </el-form-item>
         <el-form-item label="添加标签">
           <el-select v-model="publishForm.tags" multiple filterable allow-create placeholder="选择或输入标签" style="width: 100%">
@@ -176,8 +218,9 @@
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
-import { Location, Star, ChatDotRound, View, Edit, User, Picture } from '@element-plus/icons-vue'
-import { getPostList, createPost, toggleLike } from '@/api/community'
+import { Location, Star, ChatDotRound, View, Edit, User, Picture, Plus, Collection } from '@element-plus/icons-vue'
+import { getPostList, createPost, toggleLike, toggleFavorite, getFavoriteList } from '@/api/community'
+import { uploadImage } from '@/api/upload'
 import { useUserStore } from '@/stores/user'
 import { ElMessage } from 'element-plus'
 
@@ -185,6 +228,7 @@ const userStore = useUserStore()
 
 const loading = ref(false)
 const posts = ref([])
+const favoritePostIds = ref(new Set())
 const showPublishDialog = ref(false)
 const publishing = ref(false)
 const newPostContent = ref('')
@@ -197,9 +241,12 @@ const pagination = reactive({
 
 const publishForm = reactive({
   content: '',
+  images: [],
   tags: [],
   location: '',
 })
+
+const imageFileList = ref([])
 
 const commonTags = ['乌东梯田', '苗族文化', '美食推荐', '民宿体验', '蜡染', '银饰', '篝火晚会', '日出云海']
 const quickTags = ['🌾 梯田', '🏠 民宿', '🍲 美食', '🎭 文化']
@@ -229,6 +276,22 @@ const loadPosts = async () => {
   }
 }
 
+const loadFavoritePosts = async () => {
+  if (!userStore.isLoggedIn) {
+    favoritePostIds.value = new Set()
+    return
+  }
+  try {
+    const res = await getFavoriteList(userStore.user.id, 'post', 1, 100)
+    if (res.code === 0) {
+      // 数据库驱动的 relatedId 可能是字符串，而帖子 id 通常是数字，统一成字符串避免状态匹配失败。
+      favoritePostIds.value = new Set((res.data.list || []).map((item) => String(item.relatedId)))
+    }
+  } catch (error) {
+    console.error('Failed to load favorite posts:', error)
+  }
+}
+
 const handleLike = async (post) => {
   if (!userStore.isLoggedIn) {
     ElMessage.warning('请先登录')
@@ -246,12 +309,70 @@ const handleLike = async (post) => {
   }
 }
 
+const handleFavorite = async (post) => {
+  if (!userStore.isLoggedIn) {
+    ElMessage.warning('请先登录')
+    return
+  }
+  try {
+    const res = await toggleFavorite(userStore.user.id, 'post', post.id)
+    if (res.code === 0) {
+      const next = new Set(favoritePostIds.value)
+      const postId = String(post.id)
+      if (res.data?.favorited) next.add(postId)
+      else next.delete(postId)
+      favoritePostIds.value = next
+      ElMessage.success(res.data?.favorited ? '已收藏' : '已取消收藏')
+    }
+  } catch (error) {
+    console.error('Failed to favorite post:', error)
+  }
+}
+
 // 取消发布：关闭弹窗并清空草稿（原来只关弹窗，内容会残留到下次打开）
 const cancelPublish = () => {
   showPublishDialog.value = false
   publishForm.content = ''
+  publishForm.images = []
   publishForm.tags = []
   publishForm.location = ''
+  imageFileList.value = []
+}
+
+const handleImageUpload = async ({ file, onSuccess, onError }) => {
+  try {
+    const res = await uploadImage(file)
+    if (res.code !== 0 || !res.data?.url) throw new Error(res.message || '图片上传失败')
+    file.url = res.data.url
+    publishForm.images.push(res.data.url)
+    onSuccess(res.data, file)
+  } catch (error) {
+    onError(error)
+    ElMessage.error(error.message || '图片上传失败')
+  }
+}
+
+const beforeImageUpload = (file) => {
+  const isImage = file.type?.startsWith('image/')
+  const isWithinLimit = file.size <= 10 * 1024 * 1024
+  if (!isImage) {
+    ElMessage.error('只能上传图片文件')
+    return false
+  }
+  if (!isWithinLimit) {
+    ElMessage.error('单张图片不能超过 10MB')
+    return false
+  }
+  return true
+}
+
+const handleImageRemove = (file) => {
+  const url = file.url || file.response?.url || file.response?.data?.url
+  if (url) publishForm.images = publishForm.images.filter((image) => image !== url)
+}
+
+const handleImagePreview = (file) => {
+  if (file.url) window.open(file.url, '_blank', 'noopener,noreferrer')
 }
 
 const handlePublish = async () => {
@@ -265,6 +386,7 @@ const handlePublish = async () => {
     const res = await createPost({
       userId: userStore.user.id,
       content: publishForm.content,
+      images: publishForm.images,
       tags: publishForm.tags,
       location: publishForm.location,
     })
@@ -295,6 +417,7 @@ const formatTime = (time) => {
 
 onMounted(() => {
   loadPosts()
+  loadFavoritePosts()
 })
 </script>
 
@@ -307,9 +430,9 @@ onMounted(() => {
 .community-hero {
   position: relative;
   height: 280px;
-  background: linear-gradient(135deg, #1a365d 0%, #6b21a8 50%, #1a365d 100%);
-  background-image: url('https://images.pexels.com/photos/1190297/pexels-photo-1190297.jpeg?auto=compress&cs=tinysrgb&w=1920'),
-                    linear-gradient(135deg, rgba(26, 54, 93, 0.9) 0%, rgba(107, 33, 168, 0.85) 50%, rgba(26, 54, 93, 0.9) 100%);
+  background: linear-gradient(135deg, #1a365d 0%, #2d5a87 50%, #1a365d 100%);
+  background-image: url('https://images.pexels.com/photos/37962589/pexels-photo-37962589.jpeg?auto=compress&cs=tinysrgb&w=800'),
+                    linear-gradient(135deg, rgba(26, 54, 93, 0.9) 0%, rgba(45, 90, 135, 0.85) 50%, rgba(26, 54, 93, 0.9) 100%);
   background-size: cover;
   background-position: center;
   display: flex;
@@ -319,7 +442,7 @@ onMounted(() => {
   .hero-overlay {
     position: absolute;
     inset: 0;
-    background: linear-gradient(180deg, rgba(26, 54, 93, 0.7) 0%, rgba(107, 33, 168, 0.6) 100%);
+    background: linear-gradient(180deg, rgba(26, 54, 93, 0.7) 0%, rgba(45, 90, 135, 0.6) 100%);
   }
 
   .hero-content {
@@ -357,29 +480,125 @@ onMounted(() => {
   .publish-card {
     background: white;
     border-radius: 16px;
-    padding: 24px;
-    box-shadow: 0 8px 32px rgba(26, 54, 93, 0.12);
-    display: flex;
+    padding: 22px 24px 18px;
+    box-shadow: 0 14px 38px rgba(26, 54, 93, 0.12);
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
     gap: 16px;
-    border: 1px solid rgba(212, 175, 55, 0.2);
+    border: 1px solid rgba(212, 175, 55, 0.24);
+    position: relative;
+    overflow: hidden;
 
-    .user-avatar {
+    &::before {
+      content: '';
+      position: absolute;
+      inset: 0 0 auto;
+      height: 3px;
+      background: linear-gradient(90deg, var(--accent-color), #ead28a 42%, transparent 82%);
+    }
+
+    .publish-card-header {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding-top: 2px;
+    }
+
+    .publish-avatar {
       flex-shrink: 0;
+      position: relative;
+
+      :deep(.el-avatar) {
+        background: linear-gradient(135deg, var(--primary-color), #2d5a87);
+        border: 3px solid #f7f1df;
+        box-shadow: 0 4px 12px rgba(26, 54, 93, 0.16);
+      }
+
+      .avatar-status {
+        position: absolute;
+        right: 1px;
+        bottom: 2px;
+        width: 10px;
+        height: 10px;
+        border: 2px solid #fff;
+        border-radius: 50%;
+        background: #52b788;
+      }
+    }
+
+    .publish-heading {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      padding-top: 2px;
+      min-width: 148px;
+
+      strong {
+        color: var(--primary-color);
+        font-size: 15px;
+        line-height: 1.3;
+      }
+
+      span {
+        color: var(--text-light);
+        font-size: 12px;
+        line-height: 1.5;
+        white-space: nowrap;
+      }
     }
 
     .publish-input {
       flex: 1;
+      min-width: 0;
 
-      :deep(.el-textarea__inner) {
-        border: none;
-        padding: 8px 0;
+      :deep(.publish-textarea .el-textarea__inner) {
+        border: 1px solid #e9edf2;
+        border-radius: 12px;
+        background: #fbfcfd;
+        padding: 13px 15px;
         font-size: 15px;
+        line-height: 1.65;
         resize: none;
-        // 只是个「点击打开弹窗」的入口，真正的输入在弹窗里
+        min-height: 70px;
+        box-shadow: inset 0 1px 2px rgba(26, 54, 93, 0.025);
+        transition: border-color 0.25s, box-shadow 0.25s, background 0.25s;
         cursor: pointer;
 
         &::placeholder {
-          color: #999;
+          color: #a2aab6;
+        }
+
+        &:hover,
+        &:focus {
+          border-color: rgba(26, 54, 93, 0.32);
+          background: #fff;
+          box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.1);
+        }
+      }
+
+      .publish-meta {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 9px 2px 0;
+        color: #8d96a3;
+        font-size: 12px;
+
+        > span:first-child {
+          display: inline-flex;
+          align-items: center;
+          gap: 5px;
+        }
+
+        .el-icon {
+          color: var(--accent-color);
+          font-size: 14px;
+        }
+
+        .publish-meta-note {
+          color: #b0b7c1;
+          white-space: nowrap;
         }
       }
 
@@ -387,24 +606,77 @@ onMounted(() => {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-top: 12px;
-        padding-top: 12px;
-        border-top: 1px solid var(--border-color);
+        margin-top: 10px;
+        padding-top: 13px;
+        border-top: 1px solid #edf0f3;
 
         .action-tags {
           display: flex;
+          align-items: center;
+          flex-wrap: wrap;
           gap: 8px;
 
           .el-tag {
             cursor: pointer;
-            transition: all 0.3s;
+            border-radius: 999px;
+            padding: 0 11px;
+            color: #65758a;
+            background: #f8fafc;
+            border-color: #e6ebf0;
+            transition: all 0.25s;
 
             &:hover {
-              background: var(--accent-color);
-              color: white;
+              background: rgba(212, 175, 55, 0.12);
+              color: #9a7610;
               border-color: var(--accent-color);
             }
           }
+        }
+
+        :deep(.el-button) {
+          min-width: 116px;
+          height: 38px;
+          border: none;
+          box-shadow: 0 6px 14px rgba(26, 54, 93, 0.16);
+          background: linear-gradient(135deg, var(--primary-color), #2d5a87);
+
+          &:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 18px rgba(26, 54, 93, 0.22);
+          }
+        }
+      }
+    }
+  }
+}
+
+@media (max-width: 720px) {
+  .publish-section {
+    .publish-card {
+      grid-template-columns: 1fr;
+      gap: 14px;
+      padding: 20px 18px 16px;
+
+      .publish-card-header {
+        align-items: center;
+      }
+
+      .publish-heading span {
+        white-space: normal;
+      }
+
+      .publish-actions {
+        align-items: stretch;
+        flex-direction: column;
+
+        .action-tags {
+          flex-wrap: nowrap;
+          overflow-x: auto;
+          padding-bottom: 2px;
+        }
+
+        :deep(.el-button) {
+          width: 100%;
         }
       }
     }
@@ -615,7 +887,8 @@ onMounted(() => {
 
   .post-stats {
     display: flex;
-    gap: 32px;
+    flex-wrap: wrap;
+    gap: 12px 24px;
     padding-top: 16px;
     border-top: 1px dashed var(--border-color);
 
@@ -634,6 +907,10 @@ onMounted(() => {
 
       .is-liked {
         color: #f59e0b;
+      }
+
+      &.is-favorited {
+        color: var(--accent-color);
       }
 
       &:hover {
@@ -666,43 +943,187 @@ onMounted(() => {
 }
 
 :deep(.publish-dialog) {
+  width: min(680px, calc(100vw - 32px)) !important;
+  max-width: calc(100vw - 32px);
+  margin: 5vh auto 0;
+  overflow: hidden;
+  border: 1px solid #e6eaf0;
+  border-radius: 18px;
+  box-shadow: 0 24px 70px rgba(15, 23, 41, 0.24);
+
   .el-dialog__header {
     background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
     color: white;
     margin: 0;
-    padding: 20px 24px;
+    padding: 17px 22px;
 
     .el-dialog__title {
       color: white;
+      font-size: 20px;
+      font-weight: 700;
     }
 
     .el-dialog__headerbtn {
+      top: 16px;
+      right: 18px;
+
       .el-icon {
         color: white;
+        font-size: 18px;
       }
     }
+  }
+
+  .el-dialog__body {
+    max-height: 68vh;
+    overflow-y: auto;
+    padding: 20px 24px 8px;
   }
 
   .dialog-user-info {
     display: flex;
     align-items: center;
     gap: 12px;
-    margin-bottom: 20px;
-    padding-bottom: 16px;
-    border-bottom: 1px solid var(--border-color);
+    margin-bottom: 18px;
+    padding: 0 0 16px;
+    border-bottom: 1px solid #edf0f3;
+
+    .el-avatar {
+      flex-shrink: 0;
+      background: linear-gradient(135deg, var(--primary-color), #2d5a87);
+      border: 3px solid #f7f1df;
+      box-shadow: 0 4px 12px rgba(26, 54, 93, 0.12);
+    }
 
     span {
       font-weight: 600;
       color: var(--text-color);
+      font-size: 15px;
     }
   }
 
+  .publish-form {
+    .el-form-item {
+      margin-bottom: 16px;
+    }
+
+    .el-form-item__label {
+      height: auto;
+      padding: 0 0 7px;
+      color: #455264;
+      font-size: 13px;
+      font-weight: 600;
+      line-height: 1.3;
+    }
+
+    .el-textarea__inner,
+    .el-input__wrapper {
+      border: 1px solid #e1e6ec;
+      border-radius: 10px;
+      background: #fbfcfd;
+      box-shadow: none;
+      transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+
+      &:hover {
+        border-color: #cbd4df;
+      }
+
+      &:focus,
+      &:focus-within {
+        border-color: var(--primary-color);
+        background: #fff;
+        box-shadow: 0 0 0 3px rgba(26, 54, 93, 0.08);
+      }
+    }
+
+    .el-textarea__inner {
+      min-height: 126px !important;
+      padding: 12px 14px;
+      color: var(--text-color);
+      font-size: 14px;
+      line-height: 1.7;
+      resize: vertical;
+
+      &::placeholder {
+        color: #a5adb8;
+      }
+    }
+
+    .el-input__inner {
+      color: var(--text-color);
+      font-size: 14px;
+
+      &::placeholder {
+        color: #a5adb8;
+      }
+    }
+
+    .post-image-upload {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+
+      .el-upload--picture-card,
+      .el-upload-list__item {
+        width: 86px;
+        height: 86px;
+        border-radius: 10px;
+      }
+
+      .el-upload--picture-card {
+        border: 1px dashed #cfd7e2;
+        background: #fbfcfd;
+        color: var(--primary-color);
+        transition: border-color 0.2s, background 0.2s;
+
+        &:hover {
+          border-color: var(--accent-color);
+          background: rgba(212, 175, 55, 0.06);
+        }
+      }
+    }
+
+    .upload-tip {
+      display: block;
+      margin-top: 6px;
+      color: #9aa3af;
+      font-size: 12px;
+      line-height: 1.4;
+    }
+  }
+
+  .el-dialog__footer {
+    padding: 14px 24px 20px;
+    border-top: 1px solid #edf0f3;
+  }
+
   .publish-btn {
+    min-width: 92px;
+    border-radius: 9px;
     background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
     border: none;
+    box-shadow: 0 6px 14px rgba(26, 54, 93, 0.16);
 
     &:hover {
-      opacity: 0.9;
+      opacity: 0.94;
+      transform: translateY(-1px);
+    }
+  }
+}
+
+@media (max-width: 720px) {
+  :deep(.publish-dialog) {
+    width: calc(100vw - 20px) !important;
+    max-width: calc(100vw - 20px);
+    margin: 4vh auto 0;
+
+    .el-dialog__body {
+      max-height: 72vh;
+      padding: 18px 16px 4px;
+    }
+
+    .el-dialog__footer {
+      padding: 12px 16px 16px;
     }
   }
 }

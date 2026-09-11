@@ -61,7 +61,7 @@ wudong-platform/
 
 - Node.js >= 18
 - MySQL >= 8.0
-- Redis >= 6.0
+- Redis >= 6.0（可选；未启动时后端自动回退数据库）
 
 ### 1. 克隆项目
 
@@ -72,14 +72,27 @@ cd wudong-platform
 
 ### 2. 初始化数据库
 
-```bash
-# 启动 MySQL 和 Redis (使用 Docker)
-cd wudong-server
-docker-compose up -d
+MySQL 由 `cool-admin-midway` 下的 compose 提供，映射到宿主机 **3307**。
+如果使用 compose，请将后端的 `DB_PORT` 设置为 `3307`；本机 MySQL 默认仍使用 `3306`。
 
-# 或使用本地 MySQL，导入 SQL 文件
-mysql -uroot -p < sql/01-schema.sql
+```bash
+cd cool-admin-midway
+docker compose up -d          # 启动 MySQL(3307) 与 Redis(6379)
 ```
+
+再导入数据库快照（表结构 + 演示数据，23 张表）：
+
+```bash
+docker exec -i cool-admin-midway-coolDB-1 \
+  mysql -uroot -p123456 --default-character-set=utf8mb4 \
+  wudong_platform < ../wudong-platform/sql/wudong_platform.sql
+```
+
+> - 该快照表结构由 TypeORM 按实体类自动生成（`synchronize: true`），
+>   改实体后请重新导出，不要手工编辑。
+> - 若只要结构不要数据，可改跑种子脚本
+>   `wudong-server/src/scripts/seed-*.ts`（顺序：user → product →
+>   restaurant → hotel → ticket → community）。
 
 ### 3. 启动后端服务
 
@@ -91,6 +104,16 @@ npm run dev
 
 后端服务将在 http://localhost:8001 启动
 
+启动时会自动检查 8001 端口：如果已有本项目后端实例，新的启动命令会复用现有实例并正常退出，不再抛出 `EADDRINUSE` 堆栈。Redis 不可用时会自动设置为数据库回退模式，因此本地运行不依赖 Docker；Redis 恢复后将 `REDIS_ENABLED` 设为 `true` 即可启用缓存。
+
+可用以下地址检查后端是否存活：
+
+```text
+http://localhost:8001/
+```
+
+返回 `{"code":0,"message":"ok",...}` 即表示服务已启动。
+
 ### 4. 启动前端服务
 
 ```bash
@@ -99,7 +122,7 @@ npm install
 npm run dev
 ```
 
-前端应用将在 http://localhost:5173 启动
+前端应用将在 http://localhost:3000 启动
 
 ### 5. 初始化测试数据
 

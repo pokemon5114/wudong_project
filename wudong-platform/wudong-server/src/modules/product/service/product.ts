@@ -2,6 +2,7 @@ import { Inject, Provide } from '@midwayjs/core';
 import { InjectEntityModel } from '@midwayjs/typeorm';
 import { Repository, Like } from 'typeorm';
 import { AppProductEntity, AppCategoryEntity } from '../entity/product';
+import { RedisCacheService } from '../../cache/service/redis';
 
 @Provide()
 export class AppProductService {
@@ -11,13 +12,20 @@ export class AppProductService {
   @InjectEntityModel(AppCategoryEntity)
   categoryRepo: Repository<AppCategoryEntity>;
 
+  @Inject()
+  redisCache: RedisCacheService;
+
   // ===== 分类管理 =====
 
   async getCategoryList() {
+    const cached = await this.redisCache.get<any[]>('product:categories');
+    if (cached) return { code: 0, data: cached };
+
     const list = await this.categoryRepo.find({
       where: { status: 1 },
       order: { sort: 'ASC', id: 'ASC' },
     });
+    await this.redisCache.set('product:categories', list, 300);
     return { code: 0, data: list };
   }
 
@@ -29,6 +37,7 @@ export class AppProductService {
   }) {
     const category = this.categoryRepo.create(data);
     const result = await this.categoryRepo.save(category);
+    await this.redisCache.deleteByPrefix('product:');
     return { code: 0, data: result };
   }
 
@@ -43,6 +52,9 @@ export class AppProductService {
   }) {
     const page = params.page || 1;
     const pageSize = params.pageSize || 10;
+    const cacheKey = `product:list:${page}:${pageSize}:${params.categoryId || ''}:${params.keyword || ''}:${params.isRecommend ?? ''}`;
+    const cached = await this.redisCache.get<any>(cacheKey);
+    if (cached) return cached;
 
     const where: any = { status: 1 };
     if (params.categoryId) {
@@ -69,7 +81,7 @@ export class AppProductService {
       images: item.images ? JSON.parse(item.images) : [],
     }));
 
-    return {
+    const result = {
       code: 0,
       data: {
         list: data,
@@ -81,6 +93,8 @@ export class AppProductService {
         },
       },
     };
+    await this.redisCache.set(cacheKey, result, 60);
+    return result;
   }
 
   async getProductDetail(id: number) {
@@ -127,6 +141,7 @@ export class AppProductService {
       images: data.images ? JSON.stringify(data.images) : null,
     });
     const result = await this.productRepo.save(product);
+    await this.redisCache.deleteByPrefix('product:');
     return { code: 0, data: result };
   }
 
@@ -160,6 +175,7 @@ export class AppProductService {
     }
 
     await this.productRepo.update(id, updateData);
+    await this.redisCache.deleteByPrefix('product:');
     return { code: 0, message: '更新成功' };
   }
 
@@ -170,10 +186,15 @@ export class AppProductService {
     }
 
     await this.productRepo.update(id, { status: 0 });
+    await this.redisCache.deleteByPrefix('product:');
     return { code: 0, message: '删除成功' };
   }
 
   async getRecommendProducts(limit: number = 6) {
+    const cacheKey = `product:recommend:${limit}`;
+    const cached = await this.redisCache.get<any>(cacheKey);
+    if (cached) return cached;
+
     const list = await this.productRepo.find({
       where: { status: 1, isRecommend: 1 },
       relations: ['category', 'merchant'],
@@ -181,12 +202,14 @@ export class AppProductService {
       take: limit,
     });
 
-    return {
+    const result = {
       code: 0,
       data: list.map((item: any) => ({
         ...item,
         images: item.images ? JSON.parse(item.images) : [],
       })),
     };
+    await this.redisCache.set(cacheKey, result, 60);
+    return result;
   }
 }

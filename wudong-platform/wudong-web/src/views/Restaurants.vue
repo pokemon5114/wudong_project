@@ -155,7 +155,7 @@ onMounted(() => {
   position: relative;
   height: 280px;
   background: linear-gradient(135deg, #991b1b 0%, #1a365d 50%, #991b1b 100%);
-  background-image: url('https://images.pexels.com/photos/2641886/pexels-photo-2641886.jpeg?auto=compress&cs=tinysrgb&w=1920'),
+  background-image: url('https://images.pexels.com/photos/34156954/pexels-photo-34156954.jpeg?auto=compress&cs=tinysrgb&w=800'),
                     linear-gradient(135deg, rgba(153, 27, 27, 0.9) 0%, rgba(26, 54, 93, 0.85) 50%, rgba(153, 27, 27, 0.9) 100%);
   background-size: cover;
   background-position: center;

@@ -3,6 +3,8 @@ import { Inject } from '@midwayjs/core';
 import { Context } from '@midwayjs/koa';
 import { CartService } from '../../service/cart';
 
+const JWT_SECRET = process.env.JWT_SECRET || 'wudong-platform-secret-2026';
+
 /**
  * 购物车控制器（App端）
  */
@@ -138,7 +140,7 @@ export class AppCartController {
     const token = authHeader.replace('Bearer ', '');
     if (!token) return null;
     try {
-      const payload = require('jsonwebtoken').verify(token, 'wudong-platform-secret-2026') as any;
+      const payload = require('jsonwebtoken').verify(token, JWT_SECRET) as any;
       return payload.userId || null;
     } catch {
       return null;

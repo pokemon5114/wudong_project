@@ -1,10 +1,29 @@
 import { Controller, Get, Post, Put, Del, Inject, Query, Body, Headers } from '@midwayjs/core';
+import { Context } from '@midwayjs/koa';
 import { AppAdminService } from '../../service/admin';
 
 @Controller('/admin')
 export class AppAdminController {
   @Inject()
   adminService: AppAdminService;
+
+  @Inject()
+  ctx: Context;
+
+  /**
+   * 管理端除登录外的接口统一校验管理员 JWT。
+   * 保持现有请求参数和返回字段不变，仅在未授权时返回原有 40101 业务码。
+   */
+  private requireAdmin() {
+    const auth = this.ctx.get('authorization') || '';
+    const token = auth.replace(/^Bearer\s+/i, '').trim();
+    const payload = token ? this.adminService.verifyToken(token) : null;
+    if (!payload?.adminId || payload.type !== 'admin') {
+      this.ctx.status = 401;
+      return { code: 40101, message: '未登录或token已过期' };
+    }
+    return null;
+  }
 
   // ===== 登录 =====
   @Post('/login')
@@ -25,11 +44,15 @@ export class AppAdminController {
   // ===== 管理员管理 =====
   @Post('/admin')
   async createAdmin(@Body() body: any) {
+    const denied = this.requireAdmin();
+    if (denied) return denied;
     return this.adminService.createAdmin(body);
   }
 
   @Get('/admin/list')
   async getAdminList(@Query() query: any) {
+    const denied = this.requireAdmin();
+    if (denied) return denied;
     return this.adminService.getAdminList({
       page: query.page ? Number(query.page) : 1,
       pageSize: query.pageSize ? Number(query.pageSize) : 10,
@@ -39,33 +62,45 @@ export class AppAdminController {
 
   @Put('/admin/:id')
   async updateAdmin(@Body() body: any) {
+    const denied = this.requireAdmin();
+    if (denied) return denied;
     return this.adminService.updateAdmin(body.id, body);
   }
 
   @Del('/admin/:id')
   async deleteAdmin(@Body('id') id: number) {
+    const denied = this.requireAdmin();
+    if (denied) return denied;
     return this.adminService.deleteAdmin(id);
   }
 
   // ===== 系统配置 =====
   @Get('/config')
   async getConfig(@Query('key') key: string) {
+    const denied = this.requireAdmin();
+    if (denied) return denied;
     return this.adminService.getConfig(key);
   }
 
   @Post('/config')
   async setConfig(@Body() body: { key: string; value: any; name?: string; group?: string }) {
+    const denied = this.requireAdmin();
+    if (denied) return denied;
     return this.adminService.setConfig(body.key, body.value, body.name, body.group);
   }
 
   @Get('/config/list')
   async getConfigList(@Query('group') group?: string) {
+    const denied = this.requireAdmin();
+    if (denied) return denied;
     return this.adminService.getConfigList({ group });
   }
 
   // ===== 操作日志 =====
   @Get('/log/list')
   async getLogList(@Query() query: any) {
+    const denied = this.requireAdmin();
+    if (denied) return denied;
     return this.adminService.getLogList({
       page: query.page ? Number(query.page) : 1,
       pageSize: query.pageSize ? Number(query.pageSize) : 20,
@@ -79,18 +114,24 @@ export class AppAdminController {
   // ===== 数据统计 =====
   @Get('/dashboard/stats')
   async getDashboardStats() {
+    const denied = this.requireAdmin();
+    if (denied) return denied;
     return this.adminService.getDashboardStats();
   }
 
   // 前端 api/admin.js 的 getStatistics() 走 /admin/statistics
   @Get('/statistics')
   async getStatistics() {
+    const denied = this.requireAdmin();
+    if (denied) return denied;
     return this.adminService.getDashboardStats();
   }
 
   // ===== 业务数据管理 =====
   @Get('/user/list')
   async getUserList(@Query() query: any) {
+    const denied = this.requireAdmin();
+    if (denied) return denied;
     return this.adminService.getUserList({
       page: query.page ? Number(query.page) : 1,
       pageSize: query.pageSize ? Number(query.pageSize) : 10,
@@ -100,6 +141,8 @@ export class AppAdminController {
 
   @Get('/order/list')
   async getOrderList(@Query() query: any) {
+    const denied = this.requireAdmin();
+    if (denied) return denied;
     return this.adminService.getOrderList({
       page: query.page ? Number(query.page) : 1,
       pageSize: query.pageSize ? Number(query.pageSize) : 10,
@@ -111,6 +154,8 @@ export class AppAdminController {
 
   @Get('/product/list')
   async getProductList(@Query() query: any) {
+    const denied = this.requireAdmin();
+    if (denied) return denied;
     return this.adminService.getProductList({
       page: query.page ? Number(query.page) : 1,
       pageSize: query.pageSize ? Number(query.pageSize) : 10,
@@ -121,16 +166,22 @@ export class AppAdminController {
 
   @Post('/product/save')
   async saveProduct(@Body() body: any) {
+    const denied = this.requireAdmin();
+    if (denied) return denied;
     return this.adminService.saveProduct(body);
   }
 
   @Post('/product/delete')
   async deleteProduct(@Body('id') id: number) {
+    const denied = this.requireAdmin();
+    if (denied) return denied;
     return this.adminService.deleteProduct(Number(id));
   }
 
   @Get('/restaurant/list')
   async getRestaurantList(@Query() query: any) {
+    const denied = this.requireAdmin();
+    if (denied) return denied;
     return this.adminService.getRestaurantList({
       page: query.page ? Number(query.page) : 1,
       pageSize: query.pageSize ? Number(query.pageSize) : 10,
@@ -140,6 +191,8 @@ export class AppAdminController {
 
   @Get('/hotel/list')
   async getHotelList(@Query() query: any) {
+    const denied = this.requireAdmin();
+    if (denied) return denied;
     return this.adminService.getHotelList({
       page: query.page ? Number(query.page) : 1,
       pageSize: query.pageSize ? Number(query.pageSize) : 10,
@@ -149,6 +202,8 @@ export class AppAdminController {
 
   @Get('/route/list')
   async getRouteList(@Query() query: any) {
+    const denied = this.requireAdmin();
+    if (denied) return denied;
     return this.adminService.getRouteList({
       page: query.page ? Number(query.page) : 1,
       pageSize: query.pageSize ? Number(query.pageSize) : 10,
@@ -158,6 +213,8 @@ export class AppAdminController {
 
   @Get('/post/list')
   async getPostList(@Query() query: any) {
+    const denied = this.requireAdmin();
+    if (denied) return denied;
     return this.adminService.getPostList({
       page: query.page ? Number(query.page) : 1,
       pageSize: query.pageSize ? Number(query.pageSize) : 10,
@@ -168,34 +225,46 @@ export class AppAdminController {
   // ===== 业务数据的写操作 =====
   @Post('/business/save')
   async saveBusiness(@Body() body: any) {
+    const denied = this.requireAdmin();
+    if (denied) return denied;
     const { module, ...data } = body;
     return this.adminService.saveBusiness(module, data);
   }
 
   @Post('/business/delete')
   async deleteBusiness(@Body() body: { module: string; id: number }) {
+    const denied = this.requireAdmin();
+    if (denied) return denied;
     return this.adminService.deleteBusiness(body.module, Number(body.id));
   }
 
   @Post('/user/status')
   async setUserStatus(@Body() body: { id: number; status: number }) {
+    const denied = this.requireAdmin();
+    if (denied) return denied;
     return this.adminService.setUserStatus(Number(body.id), Number(body.status));
   }
 
   @Post('/order/process')
   async processOrder(@Body() body: { id: number; action: string }) {
+    const denied = this.requireAdmin();
+    if (denied) return denied;
     return this.adminService.processOrder(Number(body.id), body.action);
   }
 
   /** 帖子设为/取消精华 */
   @Post('/post/featured')
   async setPostFeatured(@Body() body: { id: number; isFeatured: number }) {
+    const denied = this.requireAdmin();
+    if (denied) return denied;
     return this.adminService.savePostFeatured(Number(body.id), Number(body.isFeatured));
   }
 
   /** 帖子上下架 */
   @Post('/post/status')
   async setPostStatus(@Body() body: { id: number; status: number }) {
+    const denied = this.requireAdmin();
+    if (denied) return denied;
     return this.adminService.setPostStatus(Number(body.id), Number(body.status));
   }
 }

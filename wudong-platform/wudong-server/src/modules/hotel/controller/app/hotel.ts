@@ -1,10 +1,29 @@
 import { Controller, Get, Post, Inject, Query, Body } from '@midwayjs/core';
+import { Context } from '@midwayjs/koa';
 import { AppHotelService } from '../../service/hotel';
+import { AppAdminService } from '../../../admin/service/admin';
 
 @Controller('/app/hotel')
 export class AppHotelController {
   @Inject()
   hotelService: AppHotelService;
+
+  @Inject()
+  adminService: AppAdminService;
+
+  @Inject()
+  ctx: Context;
+
+  private requireAdmin() {
+    const auth = this.ctx.get('authorization') || '';
+    const token = auth.replace(/^Bearer\s+/i, '').trim();
+    const payload = token ? this.adminService.verifyToken(token) : null;
+    if (!payload?.adminId || payload.type !== 'admin') {
+      this.ctx.status = 401;
+      return { code: 40101, message: '未登录或token已过期' };
+    }
+    return null;
+  }
 
   // ===== 民宿 =====
   @Get('/list')
@@ -30,6 +49,8 @@ export class AppHotelController {
 
   @Post('')
   async createHotel(@Body() body: any) {
+    const denied = this.requireAdmin();
+    if (denied) return denied;
     return this.hotelService.createHotel(body);
   }
 
@@ -55,6 +76,8 @@ export class AppHotelController {
 
   @Post('/room')
   async createRoom(@Body() body: any) {
+    const denied = this.requireAdmin();
+    if (denied) return denied;
     return this.hotelService.createRoom(body);
   }
 

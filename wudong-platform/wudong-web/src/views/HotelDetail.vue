@@ -20,7 +20,14 @@
         <div class="hotel-header">
           <div class="hotel-gallery">
             <div class="main-image-wrap">
-              <el-image :src="currentImage" fit="cover" class="main-image" :preview-src-list="previewImages" />
+              <el-image
+                :src="currentImage"
+                fit="cover"
+                class="main-image"
+                :preview-src-list="previewImages"
+                :initial-index="Math.max(0, previewImages.indexOf(currentImage))"
+                preview-teleported
+              />
               <div class="gallery-badges">
                 <el-tag v-if="hotel.isRecommend" type="danger" effect="dark" size="large">
                   <el-icon><Star /></el-icon> 推荐民宿
@@ -31,15 +38,23 @@
               </div>
             </div>
             <div class="thumbnail-list" v-if="hotel.images && hotel.images.length > 1">
-              <div
+              <button
                 v-for="(img, idx) in hotel.images"
                 :key="idx"
+                type="button"
                 class="thumbnail"
                 :class="{ active: currentImage === img }"
+                :aria-label="`查看第 ${idx + 1} 张图片`"
                 @click="currentImage = img"
               >
-                <el-image :src="img" fit="cover" />
-              </div>
+                <el-image
+                  :src="img"
+                  fit="cover"
+                  :preview-src-list="previewImages"
+                  :initial-index="idx"
+                  preview-teleported
+                />
+              </button>
             </div>
           </div>
 
@@ -97,7 +112,7 @@
           <div class="room-list">
             <div v-for="room in rooms" :key="room.id" class="room-card">
               <div class="room-image">
-                <el-image :src="room.image || hotel.coverImage || '/placeholder.svg'" fit="cover" />
+                <el-image :src="room.coverImage || hotel.coverImage || '/placeholder.svg'" fit="cover" />
               </div>
               <div class="room-info">
                 <h3 class="room-name">{{ room.name }}</h3>
@@ -266,12 +281,8 @@ const showBookingDialog = ref(false)
 const selectedRoom = ref(null)
 const roomsSection = ref(null)
 
-const currentImage = computed(() => {
-  if (hotel.value.images && hotel.value.images.length > 0) {
-    return hotel.value.images[0]
-  }
-  return hotel.value.coverImage || '/placeholder.svg'
-})
+// 当前展示图必须是可写状态；之前使用只读 computed，点击缩略图无法切换到第二张。
+const currentImage = ref('/placeholder.svg')
 
 const previewImages = computed(() => {
   if (hotel.value.images && hotel.value.images.length > 0) {
@@ -301,6 +312,7 @@ const loadHotel = async () => {
     const res = await getHotelDetail(route.params.id)
     if (res.code === 0) {
       hotel.value = res.data
+      currentImage.value = res.data.images?.[0] || res.data.coverImage || '/placeholder.svg'
     }
     // 房型接口返回的是裸数组（不是 {list}）
     const roomRes = await getRoomList(route.params.id)
@@ -491,6 +503,9 @@ onMounted(() => {
       overflow: hidden;
       cursor: pointer;
       border: 2px solid transparent;
+      padding: 0;
+      background: transparent;
+      display: block;
       transition: all var(--transition-base);
 
       &:hover, &.active {

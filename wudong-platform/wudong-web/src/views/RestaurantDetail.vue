@@ -1,7 +1,7 @@
 <template>
   <div class="restaurant-detail-page">
     <!-- Hero Section -->
-    <div class="detail-hero" :style="{ backgroundImage: `url(${restaurant.coverImage || 'https://images.pexels.com/photos/2641886/pexels-photo-2641886.jpeg?auto=compress&cs=tinysrgb&w=1920'})` }">
+    <div class="detail-hero" :style="{ backgroundImage: `url(${restaurant.coverImage || 'https://images.pexels.com/photos/34156954/pexels-photo-34156954.jpeg?auto=compress&cs=tinysrgb&w=800'})` }">
       <div class="hero-overlay"></div>
       <div class="hero-content">
         <h1>{{ restaurant.name }}</h1>
@@ -63,7 +63,7 @@
           <div class="dish-grid">
             <div v-for="dish in dishes" :key="dish.id" class="dish-card card">
               <div class="dish-image">
-                <img :src="dish.image || '/placeholder.svg'" :alt="dish.name" />
+                <img :src="dish.coverImage || '/placeholder.svg'" :alt="dish.name" />
                 <span class="dish-category">{{ dish.category }}</span>
               </div>
               <div class="dish-info">

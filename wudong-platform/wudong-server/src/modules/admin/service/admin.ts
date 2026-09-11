@@ -10,6 +10,7 @@ import { AppRestaurantEntity, AppDishEntity, AppTableEntity, AppRestaurantReview
 import { AppHotelEntity, AppRoomEntity, AppHotelReviewEntity } from '../../hotel/entity/hotel';
 import { AppRouteEntity, AppOrderEntity } from '../../ticket/entity/ticket';
 import { AppPostEntity, AppCommentEntity, AppLikeEntity, AppFavoriteEntity } from '../../community/entity/community';
+import { RedisCacheService } from '../../cache/service/redis';
 
 // 订单状态：实体用整型存取，管理端视图用字符串（见 OrderManage.vue 的筛选项）
 const ORDER_STATUS_TO_TEXT: Record<number, string> = {
@@ -62,7 +63,11 @@ export class AppAdminService {
   @InjectEntityModel(AppFavoriteEntity)
   favoriteRepo: Repository<AppFavoriteEntity>;
 
-  private jwtSecret = process.env.JWT_SECRET || 'wudong-platform-admin-secret-2026';
+  @Inject()
+  redisCache: RedisCacheService;
+
+  // 用户端与管理端统一使用同一个可配置密钥，避免不同入口签发的 token 无法互认。
+  private jwtSecret = process.env.JWT_SECRET || 'wudong-platform-secret-2026';
   private jwtExpiresIn = '24h';
 
   // ===== 管理员登录 =====
@@ -425,10 +430,12 @@ export class AppAdminService {
       const exist = await this.productRepo.findOne({ where: { id: data.id } as any });
       if (!exist) return { code: 40401, message: '商品不存在' };
       await this.productRepo.update(data.id, payload);
+      await this.redisCache.deleteByPrefix('product:');
       return { code: 0, message: '保存成功', data: { id: data.id } };
     }
 
     const saved = await this.productRepo.save(this.productRepo.create(payload));
+    await this.redisCache.deleteByPrefix('product:');
     return { code: 0, message: '保存成功', data: { id: (saved as any).id } };
   }
 
@@ -437,6 +444,7 @@ export class AppAdminService {
     if (!exist) return { code: 40401, message: '商品不存在' };
     // 逻辑删除：实体暂未定义 del_flag，先用 status=0 下架兜底（见文档 10.3）
     await this.productRepo.update(id, { status: 0 } as any);
+    await this.redisCache.deleteByPrefix('product:');
     return { code: 0, message: '删除成功' };
   }
 
@@ -631,15 +639,46 @@ export class AppAdminService {
   /**
    * 订单处理。实体是 0-4 的整型状态，管理端只做「确认/完成」这类推进。
    */
+  private async restockOrder(manager: any, order: AppOrderEntity) {
+    const quantity = Math.max(1, Number(order.quantity) || 1);
+    if (order.orderType === 'product') {
+      await manager.query('UPDATE app_product SET stock = stock + ? WHERE id = ?', [quantity, order.relatedId]);
+    } else if (order.orderType === 'hotel') {
+      await manager.query('UPDATE app_room SET stock = stock + ? WHERE id = ?', [quantity, order.relatedId]);
+    } else if (order.orderType === 'route') {
+      await manager.query(
+        'UPDATE app_route SET enrolledCount = GREATEST(enrolledCount - ?, 0) WHERE id = ?',
+        [quantity, order.relatedId]
+      );
+    }
+  }
+
   async processOrder(id: number, action: string) {
     const order = await this.orderRepo.findOne({ where: { id } as any });
     if (!order) return { code: 2001, message: '订单不存在' };
 
-    const next: Record<string, number> = { confirm: 2, complete: 3, cancel: 0, refund: 4 };
-    const target = next[action];
-    if (target === undefined) return { code: 40001, message: '不支持的操作' };
+    const transitions: Record<string, { from: number; to: number; message: string }> = {
+      confirm: { from: 1, to: 2, message: '仅待支付订单可确认' },
+      complete: { from: 2, to: 3, message: '仅已支付订单可完成' },
+      cancel: { from: 1, to: 0, message: '仅待支付订单可取消' },
+      refund: { from: 2, to: 4, message: '仅已支付订单可退款' },
+    };
+    const transition = transitions[action];
+    if (!transition) return { code: 40001, message: '不支持的操作' };
+    if (order.orderStatus !== transition.from) {
+      return { code: 2004, message: transition.message };
+    }
 
-    await this.orderRepo.update(id, { orderStatus: target } as any);
+    await this.orderRepo.manager.transaction(async (manager: any) => {
+      await manager.update(AppOrderEntity, id, { orderStatus: transition.to } as any);
+      // 取消/退款释放下单时占用的商品、房间或路线名额。
+      if (transition.to === 0 || transition.to === 4) {
+        await this.restockOrder(manager, order);
+      }
+    });
+    if (order.orderType === 'product' && (transition.to === 0 || transition.to === 4)) {
+      await this.redisCache.deleteByPrefix('product:');
+    }
     return { code: 0, message: '操作成功' };
   }
 
