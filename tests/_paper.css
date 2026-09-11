@@ -1,0 +1,19 @@
+/* ---- 撕纸边 ---- */
+.wd-torn-bottom {
+  clip-path: polygon(0% 0%, 100% 0%, 100.0% 96.2%, 97.5% 93.4%, 95.0% 94.9%, 92.5% 98.4%, 90.0% 96.7%, 87.5% 99.5%, 85.0% 96.9%, 82.5% 90.7%, 80.0% 97.1%, 77.5% 95.8%, 75.0% 97.4%, 72.5% 90.7%, 70.0% 91.7%, 67.5% 97.0%, 65.0% 89.3%, 62.5% 91.9%, 60.0% 96.6%, 57.5% 95.5%, 55.0% 92.5%, 52.5% 91.4%, 50.0% 91.4%, 47.5% 90.5%, 45.0% 95.1%, 42.5% 96.8%, 40.0% 97.5%, 37.5% 95.0%, 35.0% 91.8%, 32.5% 95.5%, 30.0% 90.0%, 27.5% 89.8%, 25.0% 93.3%, 22.5% 94.1%, 20.0% 92.3%, 17.5% 90.7%, 15.0% 96.5%, 12.5% 90.4%, 10.0% 95.4%, 7.5% 92.6%, 5.0% 93.8%, 2.5% 99.1%, 0.0% 87.8%);
+}
+
+.wd-torn-top {
+  clip-path: polygon(0.0% 5.2%, 2.5% 3.6%, 5.0% 7.4%, 7.5% 8.7%, 10.0% 6.6%, 12.5% 2.6%, 15.0% 6.4%, 17.5% 4.1%, 20.0% 3.6%, 22.5% 7.1%, 25.0% 4.8%, 27.5% 6.3%, 30.0% 3.1%, 32.5% 10.4%, 35.0% 7.7%, 37.5% 2.5%, 40.0% 4.2%, 42.5% 6.9%, 45.0% 6.7%, 47.5% 7.8%, 50.0% 5.8%, 52.5% 11.0%, 55.0% 5.8%, 57.5% 4.0%, 60.0% 3.3%, 62.5% 6.2%, 65.0% 2.9%, 67.5% 8.8%, 70.0% 0.0%, 72.5% 1.4%, 75.0% 7.9%, 77.5% 5.9%, 80.0% 5.1%, 82.5% 9.2%, 85.0% 1.7%, 87.5% 3.3%, 90.0% 9.8%, 92.5% 4.5%, 95.0% 3.4%, 97.5% 7.6%, 100.0% 3.5%, 100% 100%, 0% 100%);
+}
+
+/* ---- 手绘笔触（base64 SVG，零请求） ---- */
+.wd-squiggle {
+  background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMjAiIGhlaWdodD0iOCIgdmlld0JveD0iMCAwIDEyMCA4Ij48cGF0aCBkPSJNMSA1IFEgMTIgMSwgMjQgNSBUIDQ4IDUgVCA3MiA1IFQgOTYgNSBUIDExOSA1IiBmaWxsPSJub25lIiBzdHJva2U9IiNjODkxMmYiIHN0cm9rZS13aWR0aD0iMi4yIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48L3N2Zz4=");
+  background-repeat: repeat-x;
+  background-size: 120rpx 8rpx;
+}
+
+.wd-hand-circle {
+  background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0OCIgaGVpZ2h0PSI0OCIgdmlld0JveD0iMCAwIDQ4IDQ4Ij48cGF0aCBkPSJNMjQgNCBDIDM2IDMsIDQ1IDEyLCA0NCAyNCBDIDQzIDM2LCAzNCA0NSwgMjMgNDQgQyAxMSA0MywgMyAzNCwgNCAyMyBDIDUgMTIsIDEzIDUsIDI0IDQiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJiNGE2ZiIgc3Ryb2tlLXdpZHRoPSIyLjQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvc3ZnPg==");
+}
