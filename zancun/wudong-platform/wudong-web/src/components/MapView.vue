@@ -13,6 +13,7 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted, watch, nextTick } from 'vue'
+import 'leaflet/dist/leaflet.css'
 import L from 'leaflet'
 import { Loading, Warning } from '@element-plus/icons-vue'
 import { WUDONG_CENTER } from '@/utils/geo'

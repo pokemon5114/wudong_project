@@ -74,6 +74,7 @@
               :active-value="1"
               :inactive-value="0"
               active-color="#166534"
+              @change="handleStatusChange(row)"
             />
           </template>
         </el-table-column>
@@ -182,6 +183,19 @@ const openDialog = (edit, row = null) => {
     Object.assign(form, { id: null, name: '', hotelType: '', minPrice: 0, address: '', phone: '', description: '', coverImage: '' })
   }
   showDialog.value = true
+}
+
+const handleStatusChange = async (row) => {
+  try {
+    const res = await saveBusiness('hotel', { id: row.id, status: row.status })
+    if (res.code === 0) {
+      ElMessage.success('状态已更新')
+    } else {
+      ElMessage.error(res.message || '操作失败')
+    }
+  } catch (error) {
+    console.error('Failed to update hotel status:', error)
+  }
 }
 
 const handleSave = async () => {

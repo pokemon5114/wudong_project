@@ -259,8 +259,17 @@ const handleDelete = async (row) => {
   }
 }
 
-const handleStatusChange = (row) => {
-  saveProduct({ id: row.id, status: row.status })
+const handleStatusChange = async (row) => {
+  try {
+    const res = await saveProduct({ id: row.id, status: row.status })
+    if (res.code === 0) {
+      ElMessage.success('状态已更新')
+    } else {
+      ElMessage.error(res.message || '操作失败')
+    }
+  } catch (error) {
+    console.error('Failed to update product status:', error)
+  }
 }
 
 onMounted(() => {

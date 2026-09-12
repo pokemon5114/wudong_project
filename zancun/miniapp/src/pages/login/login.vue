@@ -13,7 +13,7 @@
     <input v-model="password" class="login__input" password placeholder="请输入密码" />
 
     <button class="login__btn" :loading="loading" @click="onLogin">登录</button>
-    <text class="login__tip">测试账号 13800000001 / abc12345</text>
+    <text class="login__tip">测试账号 13800138001 / 123456</text>
   </view>
 </template>
 
@@ -21,8 +21,8 @@
 import { ref } from 'vue';
 import { useUserStore } from '@/store/user';
 
-const phone = ref('13800000001');
-const password = ref('abc12345');
+const phone = ref('13800138001');
+const password = ref('123456');
 const loading = ref(false);
 const userStore = useUserStore();
 
@@ -40,7 +40,13 @@ async function onLogin() {
       const pages = getCurrentPages();
       const current = pages[pages.length - 1];
       if (current && current.route !== 'pages/login/login') return;
-      uni.navigateBack({ fail: () => uni.switchTab({ url: '/pages/index/index' }) });
+      // H5 直接进入登录页时页面栈只有一层，navigateBack 不会走 fail 回调（实测反而是
+      // success），所以显式判断栈深度，而不是依赖 fail 兜底。
+      if (pages.length > 1) {
+        uni.navigateBack();
+      } else {
+        uni.switchTab({ url: '/pages/index/index' });
+      }
     }, 600);
   } catch {
     // 请求层已统一提示
